@@ -1,0 +1,15 @@
+{
+  "name": "fin-d-mechs-api",
+  "version": "1.0.0",
+  "description": "A Node.js REFTful API originally made for the Fin-d-Mechs React Native mobile application.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Giancarlo Anfossy Araneda",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
