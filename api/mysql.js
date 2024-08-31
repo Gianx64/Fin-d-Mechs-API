@@ -1,10 +1,10 @@
 import mysql from 'mysql';
 
 const dbconfig = {
-    host: process.env.host || '',
-    user: process.env.user || 'root',
-    password: process.env.password || '',
-    database: process.env.database || '',
+    host: process.env.MYSQL_HOST || 'localhost',
+    user: process.env.MYSQL_USER || 'root',
+    password: process.env.MYSQL_PASSWORD || '',
+    database: process.env.MYSQL_DB || 'fin',
 }
 let connection;
 
