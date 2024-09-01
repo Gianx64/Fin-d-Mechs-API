@@ -1,17 +1,10 @@
 import mysql from 'mysql';
+import config from './api/config.js';
 
-const dbconfig = {
-    host: process.env.MYSQL_HOST || 'localhost',
-    port: process.env.MYSQL_PORT || '3306',
-    user: process.env.MYSQL_USER || 'root',
-    password: process.env.MYSQL_PASSWORD || '',
-    database: process.env.MYSQL_DB || 'FindMechs',
-    charset: process.env.MYSQL_CHARSET || 'utf8',
-}
 let connection;
 
 function conMysql() {
-    connection = mysql.createConnection(dbconfig);
+    connection = mysql.createConnection(config.mysql);
 
     connection.connect((err) => {
         if(err) {
