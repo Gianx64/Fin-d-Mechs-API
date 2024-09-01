@@ -4,7 +4,7 @@ const dbconfig = {
     host: process.env.MYSQL_HOST || 'localhost',
     user: process.env.MYSQL_USER || 'root',
     password: process.env.MYSQL_PASSWORD || '',
-    database: process.env.MYSQL_DB || 'fin',
+    database: process.env.MYSQL_DB || 'FindMechs',
 }
 let connection;
 
@@ -14,7 +14,7 @@ function conMysql() {
     connection.connect((err) => {
         if(err) {
             console.log('[DB err]: ', err);
-            setTimeout(conMysql, 200);
+            setTimeout(conMysql, 2000);
         } else {
             console.log('[DB suc]: connected.');
         }
