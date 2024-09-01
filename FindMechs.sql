@@ -1,6 +1,6 @@
-CREATE DATABASE FindMechs;
-
-USE FindMechs;
+--CREATE DATABASE FindMechs;
+--USE FindMechs;
+--From shell mysql -u root -p FindMechs < FindMechs.sql
 
 CREATE TABLE users(
     id INT NOT NULL,
@@ -8,11 +8,10 @@ CREATE TABLE users(
     correo VARCHAR(64) NOT NULL,
     clave VARCHAR(100) NOT NULL,
     PRIMARY KEY(id)
-);
-
+) ENGINE = InnoDB CHARACTER SET = utf8;
 CREATE TABLE appointments(
     id INT NOT NULL,
-    usuario VARCHAR(64) NOT NULL,
+    usuario INT NOT NULL,
     fecha DATETIME NOT NULL,
     ciudad VARCHAR(64) NOT NULL,
     direccion VARCHAR(64) NOT NULL,
@@ -21,7 +20,7 @@ CREATE TABLE appointments(
     detalles VARCHAR(128) NULL,
     servicio BOOLEAN NULL,
     id_taller INT NULL,
-    mech VARCHAR(64) NOT NULL,
+    mech INT NOT NULL,
     confirmado DATETIME NULL,
     cancelado DATETIME NULL,
     auto_tomado DATETIME NULL,
@@ -32,5 +31,6 @@ CREATE TABLE appointments(
     mech_comentario VARCHAR(128) NULL,
     mech_comentario_tiempo DATETIME NULL,
     PRIMARY KEY(id),
-    FOREIGN KEY(usuario) REFERENCES users(correo),
-);
+    FOREIGN KEY(usuario) REFERENCES users(id),
+    FOREIGN KEY(mech) REFERENCES users(id)
+) ENGINE = InnoDB CHARACTER SET = utf8;
