@@ -1,4 +1,8 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
+# npm
 node_modules/
+package-lock.json
+
+# configuration
+config.js
