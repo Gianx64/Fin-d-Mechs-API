@@ -18,6 +18,7 @@ function conMysql() {
     connection.on('error', err => {
         console.log('[DB err]: ', err);
         if(err.code === 'PROTOCOL_CONNECTION_LOST') {
+            setTimeout(conMysql, 5000);
             conMysql();
         } else {
             throw err;
@@ -59,6 +60,14 @@ function create(table, data) {
     })
 }
 
+function updateWithId(table, data) {
+    return new Promise((resolve, reject) => {
+        connection.query(`UPDATE INTO ${table} SET ? WHERE ID = ?`, [data, data.id], (error, result) => {
+            return error ? reject(error) : resolve(result);
+        })
+    })
+}
+
 function deleteWithId(table, id) {
     return new Promise((resolve, reject) => {
         connection.query(`DELETE FROM ${table} WHERE id = ${id}`, (error, result) => {
@@ -67,4 +76,4 @@ function deleteWithId(table, id) {
     })
 }
 
-export default { readTable, readWithId, readUser, create, deleteWithId }
+export default { readTable, readWithId, readUser, create, updateWithId, deleteWithId }

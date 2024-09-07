@@ -1,57 +1,68 @@
 import { Router } from 'express';
-import fetchAll from '../mysql.js';
+import mysql from '../mysql.js';
+
 const router = Router();
 
 router.get('/', (req, res, next) => {
-    const appointments = fetchAll('appointments').then((items) => {
-        res.status(200).json({
-            message: 'Handling GET request for appointments',
-            appointments: appointments
-        });
-    })
+    try {
+        mysql.readTable('appointments').then((items) => {
+            res.status(200).json({
+                message: 'Handling GET request for appointments',
+                appointments: items
+            });
+        })
+    } catch(err) {
+        next(err);
+    }
 });
 
 router.post('/', (req, res, next) => {
-    const appointment = {
-        user: req.body.user,
-        date: req.body.date,
-        city: req.body.city,
-        address: req.body.address,
-        car_make: req.body.car_make,
-        car_model: req.body.car_model,
-        description: req.body.description,
-        service: req.body.service,
-        workshop_id: req.body.workshop_id,
-        mech: req.body.mech
+    try {
+        mysql.updateWithId('appointments', req.body).then((items) => {
+            res.status(201).json({
+                message: 'Cita creada exitosamente.'
+            });
+        })
+    } catch(err) {
+        next(err);
     }
-    res.status(201).json({
-        message: 'Handling POST request for appointments',
-        appointment: appointment
-    });
 });
 
 router.get('/:appointmentId', (req, res, next) => {
-    const id = req.params.appointmentId;
-    res.status(200).json({
-        message: 'Handling GET request for appointments',
-        id: id
-    });
+    try {
+        mysql.readWithId('appointments', req.params.appointmentId).then((items) => {
+            res.status(200).json({
+                message: 'Cita encontrada.',
+                appointment: items[0]
+            });
+        })
+    } catch(err) {
+        next(err);
+    }
 });
 
 router.patch('/:appointmentId', (req, res, next) => {
-    const id = req.params.appointmentId;
-    res.status(200).json({
-        message: 'Handling PATCH request for appointments',
-        id: id
-    });
+    try {
+        mysql.updateWithId('appointments', req.body).then(() => {
+            res.status(200).json({
+                message: 'Cita actualizada exitosamente.'
+            });
+        })
+    } catch(err) {
+        next(err);
+    }
 });
 
 router.delete('/:appointmentId', (req, res, next) => {
-    const id = req.params.appointmentId;
-    res.status(200).json({
-        message: 'Handling DELETE request for appointments',
-        id: id
-    });
+    try {
+        mysql.deleteWithId('appointments', req.params.appointmentId).then(() => {
+            res.status(200).json({
+                message: 'Cita eliminada exitosamente.'
+            });
+        })
+    } catch(err) {
+        next(err);
+    }
 });
 
 export default router;
