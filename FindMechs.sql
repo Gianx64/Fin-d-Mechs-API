@@ -6,7 +6,7 @@ CREATE TABLE users(
     id INT NOT NULL,
     usuario VARCHAR(64) NOT NULL,
     correo VARCHAR(64) NOT NULL,
-    clave VARCHAR(100) NOT NULL,
+    clave VARCHAR(64) NOT NULL,
     PRIMARY KEY(id)
 ) ENGINE = InnoDB CHARACTER SET = utf8;
 CREATE TABLE appointments(
