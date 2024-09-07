@@ -1,12 +1,16 @@
 import express from 'express';
-const app = express();
-import appointmentRoutes from './routes/appointments.js';
 import bodyParser from 'body-parser';
+import appointmentRoutes from './routes/appointments.js';
+import authRoutes from './routes/auth.js';
 
+const app = express();
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 
-app.use('/appointments', appointmentRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/auth', authRoutes);
 
 app.use((req, res, next) => {
     req.header('Access-Control-Allow-Origin', '*');
@@ -16,6 +20,7 @@ app.use((req, res, next) => {
         return res.status(200).json({});
     }
 });
+
 app.use((req, res, next) => {
     const error = new Error('Not found');
     error.status = 404;

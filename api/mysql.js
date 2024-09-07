@@ -1,5 +1,5 @@
 import mysql from 'mysql';
-import config from './api/config.js';
+import config from '../config.js';
 
 let connection;
 
@@ -9,7 +9,7 @@ function conMysql() {
     connection.connect((err) => {
         if(err) {
             console.log('[DB err]: ', err);
-            setTimeout(conMysql, 2000);
+            setTimeout(conMysql, 5000);
         } else {
             console.log('[DB suc]: connected.');
         }
@@ -27,40 +27,44 @@ function conMysql() {
 
 conMysql();
 
-function fetchAll(table) {
+function readTable(table) {
     return new Promise((resolve, reject) => {
         connection.query(`SELECT FROM ${table}`, (error, result) => {
-            if(error) return reject(error);
-            resolve(result);
+            return error ? reject(error) : resolve(result);
         })
     })
 }
 
-function fetchOne(table, id) {
+function readWithId(table, id) {
     return new Promise((resolve, reject) => {
         connection.query(`SELECT FROM ${table} WHERE id = ${id}`, (error, result) => {
-            if(error) return reject(error);
-            resolve(result);
+            return error ? reject(error) : resolve(result);
+        })
+    })
+}
+
+function readUser(correo) {
+    return new Promise((resolve, reject) => {
+        connection.query(`SELECT FROM users WHERE correo = ${correo}`, (error, result) => {
+            return error ? reject(error) : resolve(result);
         })
     })
 }
 
 function create(table, data) {
     return new Promise((resolve, reject) => {
-        connection.query(`SELECT FROM ${table}`, (error, result) => {
-            if(error) return reject(error);
-            resolve(result);
+        connection.query(`INSERT INTO ${table} SET ?`, data, (error, result) => {
+            return error ? reject(error) : resolve(result);
         })
     })
 }
 
-function deleteOne(table, id) {
+function deleteWithId(table, id) {
     return new Promise((resolve, reject) => {
         connection.query(`DELETE FROM ${table} WHERE id = ${id}`, (error, result) => {
-            if(error) return reject(error);
-            resolve(result);
+            return error ? reject(error) : resolve(result);
         })
     })
 }
 
-export default { fetchAll, fetchOne, create, deleteOne }
+export default { readTable, readWithId, readUser, create, deleteWithId }
