@@ -18,7 +18,7 @@ router.get('/', (req, res, next) => {
 
 router.post('/', (req, res, next) => {
     try {
-        mysql.updateWithId('appointments', req.body).then((items) => {
+        mysql.create('appointments', req.body).then(() => {
             res.status(201).json({
                 message: 'Cita creada exitosamente.'
             });

@@ -30,7 +30,7 @@ conMysql();
 
 function readTable(table) {
     return new Promise((resolve, reject) => {
-        connection.query(`SELECT FROM ${table}`, (error, result) => {
+        connection.query(`SELECT * FROM ${table}`, (error, result) => {
             return error ? reject(error) : resolve(result);
         })
     })
@@ -38,7 +38,7 @@ function readTable(table) {
 
 function readWithId(table, id) {
     return new Promise((resolve, reject) => {
-        connection.query(`SELECT FROM ${table} WHERE id = ${id}`, (error, result) => {
+        connection.query(`SELECT * FROM ${table} WHERE id = ${id}`, (error, result) => {
             return error ? reject(error) : resolve(result);
         })
     })
@@ -46,7 +46,7 @@ function readWithId(table, id) {
 
 function readUser(correo) {
     return new Promise((resolve, reject) => {
-        connection.query(`SELECT FROM users WHERE correo = ${correo}`, (error, result) => {
+        connection.query(`SELECT * FROM users WHERE correo = ${correo}`, (error, result) => {
             return error ? reject(error) : resolve(result);
         })
     })
