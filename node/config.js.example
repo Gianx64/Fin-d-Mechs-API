@@ -6,11 +6,11 @@ export default ({
         secret: 'secretnotefortokengeneration'
     },
     mysql: {
-        host: '127.0.0.1',
+        host: 'mysql',
         port: '3306',
-        user: 'root',
-        password: '',
-        database: 'FindMechs',
+        user: 'gian',
+        password: 'pass',
+        database: 'FindMechsDB',
         charset: 'utf8'
     }
 })

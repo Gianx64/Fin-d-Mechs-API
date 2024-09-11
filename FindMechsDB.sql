@@ -1,17 +1,15 @@
---CREATE DATABASE FindMechs;
---USE FindMechs;
---From shell mysql -u root -p FindMechs < FindMechs.sql
-
-CREATE TABLE users(
+CREATE DATABASE IF NOT EXISTS FindMechsDB;
+USE FindMechsDB;
+CREATE TABLE IF NOT EXISTS users(
     id SMALLINT unsigned NOT NULL AUTO_INCREMENT,
     usuario VARCHAR(64) NOT NULL,
     correo VARCHAR(64) NOT NULL,
     clave VARCHAR(64) NOT NULL,
     PRIMARY KEY(id)
 ) ENGINE = InnoDB CHARACTER SET = utf8;
-CREATE TABLE appointments(
+CREATE TABLE IF NOT EXISTS appointments(
     id INT unsigned NOT NULL AUTO_INCREMENT,
-    usuario SMALLINT NOT NULL,
+    usuario SMALLINT unsigned NOT NULL,
     fecha DATETIME NOT NULL,
     ciudad VARCHAR(64) NOT NULL,
     direccion VARCHAR(64) NOT NULL,
@@ -20,7 +18,7 @@ CREATE TABLE appointments(
     detalles VARCHAR(128) NULL,
     servicio BOOLEAN NULL,
     id_taller SMALLINT NULL,
-    mech SMALLINT NOT NULL,
+    mech SMALLINT unsigned NOT NULL,
     confirmado DATETIME NULL,
     cancelado DATETIME NULL,
     auto_tomado DATETIME NULL,

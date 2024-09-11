@@ -1,4 +1,4 @@
-import mysql from 'mysql';
+import mysql from 'mysql2';
 import config from '../config.js';
 
 let connection;
@@ -9,7 +9,7 @@ function conMysql() {
     connection.connect((err) => {
         if(err) {
             console.log('[DB err]: ', err);
-            setTimeout(conMysql, 5000);
+            setTimeout(conMysql, 30000);
         } else {
             console.log('[DB suc]: connected.');
         }
@@ -19,14 +19,13 @@ function conMysql() {
         console.log('[DB err]: ', err);
         if(err.code === 'PROTOCOL_CONNECTION_LOST') {
             setTimeout(conMysql, 5000);
-            conMysql();
         } else {
             throw err;
         }
     })
 }
 
-conMysql();
+setTimeout(conMysql, 300000);
 
 function readTable(table) {
     return new Promise((resolve, reject) => {

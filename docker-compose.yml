@@ -1,0 +1,29 @@
+services:
+  mysql:
+    image: "mysql"
+    restart: always
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: TRUE
+      MYSQL_DATABASE: 'FindMechsDB'
+      MYSQL_USER: 'gian'
+      MYSQL_PASSWORD: 'pass'  #TODO: Change in node/config.js.example
+    command: --init-file /docker-entrypoint-initdb.d/FindMechsDB.sql
+    volumes:
+      - ./FindMechsDB.sql:/docker-entrypoint-initdb.d/FindMechsDB.sql
+      - FindMechsDB:/var/lib/mysql
+    ports:
+      - 3306:3306
+  node1:
+    restart: on-failure
+    build: ./node
+    ports:
+      - 81:3000
+  nginx:
+    build: ./nginx
+    ports:
+      - '80:80'
+    depends_on:
+      - node1
+
+volumes:
+  FindMechsDB:
