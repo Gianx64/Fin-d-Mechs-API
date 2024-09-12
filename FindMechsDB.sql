@@ -5,7 +5,19 @@ CREATE TABLE IF NOT EXISTS users(
     usuario VARCHAR(64) NOT NULL,
     correo VARCHAR(64) NOT NULL,
     clave VARCHAR(64) NOT NULL,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
     PRIMARY KEY(id)
+) ENGINE = InnoDB CHARACTER SET = utf8;
+CREATE TABLE IF NOT EXISTS workshops(
+    id SMALLINT unsigned NOT NULL AUTO_INCREMENT,
+    usuario SMALLINT unsigned NOT NULL,
+    ciudad VARCHAR(64) NOT NULL,
+    direccion VARCHAR(64) NOT NULL,
+    detalles VARCHAR(128) NULL,
+    mechs VARCHAR(64) NULL,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY(id),
+    FOREIGN KEY(usuario) REFERENCES users(id)
 ) ENGINE = InnoDB CHARACTER SET = utf8;
 CREATE TABLE IF NOT EXISTS appointments(
     id INT unsigned NOT NULL AUTO_INCREMENT,
@@ -16,9 +28,11 @@ CREATE TABLE IF NOT EXISTS appointments(
     auto_marca VARCHAR(16) NOT NULL,
     auto_modelo VARCHAR(32) NOT NULL,
     detalles VARCHAR(128) NULL,
-    servicio BOOLEAN NULL,
-    id_taller SMALLINT NULL,
     mech SMALLINT unsigned NOT NULL,
+    servicio BIT(2) NOT NULL,
+    id_taller SMALLINT unsigned NULL,
+    ingresado DATETIME DEFAULT NOW(),
+    actualizado DATETIME ON UPDATE NOW(),
     confirmado DATETIME NULL,
     cancelado DATETIME NULL,
     auto_tomado DATETIME NULL,
@@ -30,5 +44,6 @@ CREATE TABLE IF NOT EXISTS appointments(
     mech_comentario_tiempo DATETIME NULL,
     PRIMARY KEY(id),
     FOREIGN KEY(usuario) REFERENCES users(id),
-    FOREIGN KEY(mech) REFERENCES users(id)
+    FOREIGN KEY(mech) REFERENCES users(id),
+    FOREIGN KEY(id_taller) REFERENCES workshops(id)
 ) ENGINE = InnoDB CHARACTER SET = utf8;
