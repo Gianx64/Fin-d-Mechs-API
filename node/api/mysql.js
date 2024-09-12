@@ -7,25 +7,21 @@ function conMysql() {
     connection = mysql.createConnection(config.mysql);
 
     connection.connect((err) => {
-        if(err) {
-            console.log('[DB err]: ', err);
-            setTimeout(conMysql, 30000);
-        } else {
+        if(!err) {
             console.log('[DB suc]: connected.');
         }
     })
 
     connection.on('error', err => {
-        console.log('[DB err]: ', err);
-        if(err.code === 'PROTOCOL_CONNECTION_LOST') {
-            setTimeout(conMysql, 5000);
-        } else {
-            throw err;
-        }
+        if(err.sqlMessage)
+            console.log('[DB err]:', err.errno, err.code, err.sqlMessage);
+        else 
+            console.log('[DB err]:', err.errno, err.code);
+        setTimeout(conMysql, 10000);
     })
 }
 
-setTimeout(conMysql, 300000);
+setTimeout(conMysql, 10000);
 
 function readTable(table) {
     return new Promise((resolve, reject) => {
@@ -61,7 +57,7 @@ function create(table, data) {
 
 function updateWithId(table, data) {
     return new Promise((resolve, reject) => {
-        connection.query(`UPDATE INTO ${table} SET ? WHERE ID = ?`, [data, data.id], (error, result) => {
+        connection.query(`UPDATE ${table} SET ? WHERE id = ?`, [data, data.id], (error, result) => {
             return error ? reject(error) : resolve(result);
         })
     })

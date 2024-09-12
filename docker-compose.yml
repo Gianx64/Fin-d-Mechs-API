@@ -13,7 +13,7 @@ services:
       - FindMechsDB:/var/lib/mysql
     ports:
       - 3306:3306
-  node1:
+  node:
     restart: on-failure
     build: ./node
     ports:
@@ -23,7 +23,7 @@ services:
     ports:
       - '80:80'
     depends_on:
-      - node1
+      - node
 
 volumes:
   FindMechsDB:
