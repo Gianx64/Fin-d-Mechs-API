@@ -1,11 +1,11 @@
 import { hash, compare } from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import config from '../config.js'
-import mysql from './mysql.js'
+import postgres from './postgres.js'
 
 async function login(correo, clave) {
     try {
-        const data = await mysql.readUser('users', correo);
+        const data = await postgres.readUser('users', correo);
         return compare(clave, data.clave).then(result => {
             if(result === true) {
                 return assignToken({...data});
@@ -53,7 +53,7 @@ async function create(data) {
         correo: data.correo,
         clave: await hash(data.clave.toString(), 6)
     }
-    mysql.create('users', authData);
+    postgres.create('users', authData);
 }
 
 export default { login, assignToken, verifyToken, checkToken, decodifyHeader, create }

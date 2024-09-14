@@ -1,6 +1,6 @@
 import { Router } from "express";
 import auth from "../auth.js";
-import mysql from "../mysql.js";
+import postgres from "../postgres.js";
 
 const router = Router();
 
@@ -27,7 +27,7 @@ async function signIn(req, res, next) {
 
 async function readUser(req, res, next) {
     try {
-        const user = await mysql.readUser(req.params.correo);
+        const user = await postgres.readUser(req.params.correo);
         res.status(200).json({'user': user})
     } catch(err) {
         next(err);
@@ -36,7 +36,7 @@ async function readUser(req, res, next) {
 
 async function signUp(req, res, next) {
     try {
-        mysql.create('users', req.body).then(() => {
+        postgres.create('users', req.body).then(() => {
             res.status(201).json({
                 message: 'Usuario creado exitosamente.'
             });

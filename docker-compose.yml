@@ -1,18 +1,16 @@
 services:
-  mysql:
-    image: "mysql"
+  postgres:
+    image: "postgres:16.4-alpine"
     restart: always
     environment:
-      MYSQL_RANDOM_ROOT_PASSWORD: TRUE
-      MYSQL_DATABASE: 'FindMechsDB'
-      MYSQL_USER: 'gian'
-      MYSQL_PASSWORD: 'pass'  #TODO: Change in node/config.js.example
-    command: --init-file /docker-entrypoint-initdb.d/FindMechsDB.sql
+      POSTGRES_USER: 'gian'
+      POSTGRES_PASSWORD: 'pass'  #TODO: Change in node/config.js.example
+      POSTGRES_DB: 'FindMechsDB'
     volumes:
-      - ./FindMechsDB.sql:/docker-entrypoint-initdb.d/FindMechsDB.sql
-      - FindMechsDB:/var/lib/mysql
+      - ./FindMechsDB_PostgreSQL.sql:/docker-entrypoint-initdb.d/FindMechsDB_PostgreSQL.sql
+      - FindMechsDB:/var/lib/postgresql
     ports:
-      - 3306:3306
+      - 5432:5432
   node:
     restart: on-failure
     build: ./node

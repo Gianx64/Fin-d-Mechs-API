@@ -21,7 +21,7 @@ function conMysql() {
     })
 }
 
-setTimeout(conMysql, 10000);
+//setTimeout(conMysql, 10000);
 
 function readTable(table) {
     return new Promise((resolve, reject) => {

@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import mysql from '../mysql.js';
+import postgres from '../postgres.js';
 
 const router = Router();
 
 router.get('/', (req, res, next) => {
     try {
-        mysql.readTable('appointments').then((items) => {
+        postgres.readTable('appointments').then((items) => {
             res.status(200).json({
                 message: 'Handling GET request for appointments',
                 appointments: items
@@ -18,7 +18,7 @@ router.get('/', (req, res, next) => {
 
 router.post('/', (req, res, next) => {
     try {
-        mysql.create('appointments', req.body).then(() => {
+        postgres.create('appointments', req.body).then(() => {
             res.status(201).json({
                 message: 'Cita creada exitosamente.'
             });
@@ -30,7 +30,7 @@ router.post('/', (req, res, next) => {
 
 router.get('/:appointmentId', (req, res, next) => {
     try {
-        mysql.readWithId('appointments', req.params.appointmentId).then((items) => {
+        postgres.readWithId('appointments', req.params.appointmentId).then((items) => {
             res.status(200).json({
                 message: 'Cita encontrada.',
                 appointment: items[0]
@@ -43,7 +43,7 @@ router.get('/:appointmentId', (req, res, next) => {
 
 router.patch('/:appointmentId', (req, res, next) => {
     try {
-        mysql.updateWithId('appointments', req.body).then(() => {
+        postgres.updateWithId('appointments', req.body).then(() => {
             res.status(200).json({
                 message: 'Cita actualizada exitosamente.'
             });
@@ -55,7 +55,7 @@ router.patch('/:appointmentId', (req, res, next) => {
 
 router.delete('/:appointmentId', (req, res, next) => {
     try {
-        mysql.deleteWithId('appointments', req.params.appointmentId).then(() => {
+        postgres.deleteWithId('appointments', req.params.appointmentId).then(() => {
             res.status(200).json({
                 message: 'Cita eliminada exitosamente.'
             });
