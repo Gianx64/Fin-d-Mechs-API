@@ -1,10 +1,12 @@
 CREATE TABLE IF NOT EXISTS users(
     id SMALLSERIAL PRIMARY KEY,
     usuario VARCHAR(64) NOT NULL,
-    correo VARCHAR(64) NOT NULL,
+    correo VARCHAR(64) UNIQUE NOT NULL,
     clave VARCHAR(64) NOT NULL,
+    rol BIT(2) NOT NULL DEFAULT b'00',
     activo BOOLEAN NOT NULL DEFAULT TRUE
 );
+COMMENT ON TABLE users.rol IS '11=admin, 10=mech_verified, 01=mech_unverified, 00=user';
 CREATE TABLE IF NOT EXISTS workshops(
     id SMALLSERIAL PRIMARY KEY,
     usuario SMALLINT NOT NULL REFERENCES users(id),

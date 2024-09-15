@@ -3,8 +3,9 @@ USE FindMechsDB;
 CREATE TABLE IF NOT EXISTS users(
     id SMALLINT unsigned NOT NULL AUTO_INCREMENT,
     usuario VARCHAR(64) NOT NULL,
-    correo VARCHAR(64) NOT NULL,
+    correo VARCHAR(64) UNIQUE NOT NULL,
     clave VARCHAR(64) NOT NULL,
+    rol BIT(2) NOT NULL COMMENT '11=admin, 10=mech_verified, 01=mech_unverified, 00=user',
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     PRIMARY KEY(id)
 ) ENGINE = InnoDB CHARACTER SET = utf8;
