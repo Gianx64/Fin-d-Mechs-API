@@ -17,7 +17,7 @@ const signIn = (req, res, next) => {
         const data = postgres.readUser('users', req.body.correo);
         const token = compare(req.body.clave, data.clave).then(result => {
             if(result === true) {
-                return jwt.sign(...data, config.jwt.secret);
+                return jwt.sign(...data, config.jwt.secret, {expiresIn: '7d'});
             } else {
                 throw new Error('Información inválida.');
             }
