@@ -35,7 +35,15 @@ function readWithId(table, id) {
     })
 }
 
-function readUser(correo) {
+function userCreate(data) {
+    return new Promise((resolve) => {
+        client.query(`INSERT INTO users (usuario, correo, clave, rol) VALUES (${data.usuario}, ${data.correo}, ${data.clave}, ${data.rol})`, (error, result) => {
+            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
+        })
+    })
+}
+
+function userCreate(correo) {
     return new Promise((resolve) => {
         client.query(`SELECT * FROM users WHERE correo = ${correo}`, (error, result) => {
             return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
@@ -43,28 +51,109 @@ function readUser(correo) {
     })
 }
 
-function create(table, data) {
+function userUpdate(data) {
     return new Promise((resolve) => {
-        client.query(`INSERT INTO ${table} SET ?`, data, (error, result) => {
+        client.query(`UPDATE users SET (usuario, correo, clave) = (${data.usuario}, ${data.correo}, ${data.clave}) WHERE id = ${data.id}`, (error, result) => {
             return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
         })
     })
 }
 
-function updateWithId(table, data) {
+function userDisable(id) {
     return new Promise((resolve) => {
-        client.query(`UPDATE ${table} SET ? WHERE id = ?`, [data, data.id], (error, result) => {
+        client.query(`UPDATE users SET activo = FALSE WHERE id = ${id}`, (error, result) => {
             return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
         })
     })
 }
 
-function deleteWithId(table, id) {
+function appointmentCreate(data) {
     return new Promise((resolve) => {
-        client.query(`DELETE FROM ${table} WHERE id = ${id}`, (error, result) => {
+        client.query(`INSERT INTO appointments (usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller) VALUES (${data.usuario}, ${data.fecha}, ${data.ciudad}, ${data.direccion}, ${data.auto_marca}, ${data.auto_modelo}, ${data.detalles}, ${data.mech}, ${data.servicio}, ${data.id_taller})`, (error, result) => {
             return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
         })
     })
 }
 
-export default { readTable, readWithId, readUser, create, updateWithId, deleteWithId }
+function appointmentsReadUser(id) {
+    return new Promise((resolve) => {
+        client.query(`SELECT * FROM appointments WHERE usuario = ${id}`, (error, result) => {
+            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
+        })
+    })
+}
+
+function appointmentsReadMech(id) {
+    return new Promise((resolve) => {
+        client.query(`SELECT * FROM appointments WHERE mech = ${id}`, (error, result) => {
+            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
+        })
+    })
+}
+
+function appointmentUpdate(data) {
+    return new Promise((resolve) => {
+        client.query(`UPDATE appointments SET (usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller, actualizado) = (${data.usuario}, ${data.fecha}, ${data.ciudad}, ${data.direccion}, ${data.auto_marca}, ${data.auto_modelo}, ${data.detalles}, ${data.mech}, ${data.servicio}, ${data.id_taller}, NOW()) WHERE id = ${data.id}`, (error, result) => {
+            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
+        })
+    })
+}
+
+function appointmentCancel(who, id) {
+	const canceller = who? true: false;
+    return new Promise((resolve) => {
+        client.query(`UPDATE appointments SET actualizado = NOW(), cancelado = NOW(), canceladopor = ${canceller} WHERE id = ${id}`, (error, result) => {
+            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
+        })
+    })
+}
+
+function appointmentConfirm(id) {
+    return new Promise((resolve) => {
+        client.query(`UPDATE appointments SET actualizado = NOW(), confirmado = NOW() WHERE id = ${id}`, (error, result) => {
+            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
+        })
+    })
+}
+
+function appointmentCarTake(id) {
+    return new Promise((resolve) => {
+        client.query(`UPDATE appointments SET actualizado = NOW(), auto_tomado = NOW() WHERE id = ${id}`, (error, result) => {
+            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
+        })
+    })
+}
+
+function appointmentCarDeliver(id) {
+    return new Promise((resolve) => {
+        client.query(`UPDATE appointments SET actualizado = NOW(), auto_devuelto = NOW() WHERE id = ${id}`, (error, result) => {
+            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
+        })
+    })
+}
+
+function appointmentComplete(id) {
+    return new Promise((resolve) => {
+        client.query(`UPDATE appointments SET actualizado = NOW(), completado = NOW() WHERE id = ${id}`, (error, result) => {
+            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
+        })
+    })
+}
+
+function appointmentCommentUser(comment, id) {
+    return new Promise((resolve) => {
+        client.query(`UPDATE appointments SET actualizado = NOW(), usuario_comentario_tiempo = NOW(), usuario_comentario = ${comment} WHERE id = ${id}`, (error, result) => {
+            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
+        })
+    })
+}
+
+function appointmentCommentMech(comment, id) {
+    return new Promise((resolve) => {
+        client.query(`UPDATE appointments SET actualizado = NOW(), mech_comentario_tiempo = NOW(), mech_comentario = ${comment} WHERE id = ${id}`, (error, result) => {
+            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
+        })
+    })
+}
+
+export default { readTable, readWithId, userCreate, userCreate, userUpdate, userDisable, appointmentCreate, appointmentsReadUser, appointmentsReadMech, appointmentUpdate, appointmentCancel, appointmentConfirm, appointmentCarTake, appointmentCarDeliver, appointmentComplete, appointmentCommentUser, appointmentCommentMech }

@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS users(
     id SMALLSERIAL PRIMARY KEY,
     usuario VARCHAR(64) NOT NULL,
+    celular VARCHAR(16) NOT NULL,
     correo VARCHAR(64) UNIQUE NOT NULL,
     clave VARCHAR(64) NOT NULL,
     rol BIT(2) NOT NULL DEFAULT b'00',
@@ -32,11 +33,13 @@ CREATE TABLE IF NOT EXISTS appointments(
     actualizado TIMESTAMP,
     confirmado TIMESTAMP,
     cancelado TIMESTAMP,
+    canceladopor BOOLEAN,
     auto_tomado TIMESTAMP,
     auto_devuelto TIMESTAMP,
-    completado_tiempo TIMESTAMP,
+    completado TIMESTAMP,
     usuario_comentario VARCHAR(128),
     usuario_comentario_tiempo TIMESTAMP,
     mech_comentario VARCHAR(128),
     mech_comentario_tiempo TIMESTAMP
 );
+COMMENT ON TABLE appointments.canceladopor IS 'false=user, true=mech';
