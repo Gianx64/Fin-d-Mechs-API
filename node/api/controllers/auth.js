@@ -29,10 +29,11 @@ const signIn = (req, res, next) => {
 }
 
 async function signUp(req, res, next) {
-    authData = {
+    const authData = {
         usuario: req.body.usuario,
         correo: req.body.correo,
-        clave: await hash(req.body.clave.toString(), 6)
+        clave: await hash(req.body.clave.toString(), 6),
+		rol: req.body.rol
     }
     try {
         postgres.userCreate('users', authData).then(() => {
