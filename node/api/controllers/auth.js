@@ -5,23 +5,25 @@ import postgres from '../postgres.js'
 
 const checkAuth = (req, res, next) => {
     decodifyHeader(req);
+    next();
 }
 
 const getUserFromToken = (req, res, next) => {
-    const user = decodifyHeader(req)
+    const user = decodifyHeader(req);
     res.status(200).json(user);
 }
 
-const signIn = (req, res, next) => {
+async function signIn(req, res, next) {
     try {
-        const data = postgres.readUser('users', req.body.correo);
-        const token = compare(req.body.clave, data.clave).then(result => {
+        const data = await postgres.userRead(req.body.correo);
+        const token = await compare(req.body.clave, data.clave).then(result => {
             if(result === true) {
-                return jwt.sign(...data, config.jwt.secret, {expiresIn: '7d'});
+                return jwt.sign(data, config.jwt.secret, {expiresIn: '7d'});
             } else {
                 throw new Error('Información inválida.');
             }
         })
+        console.log("token generado: "+token);
         res.status(200).json({'token': token});
     } catch(err) {
         next(err);
@@ -31,12 +33,13 @@ const signIn = (req, res, next) => {
 async function signUp(req, res, next) {
     const authData = {
         usuario: req.body.usuario,
+        celular: req.body.celular,
         correo: req.body.correo,
         clave: await hash(req.body.clave.toString(), 6),
-		rol: req.body.rol
+        rol: req.body.rol
     }
     try {
-        postgres.userCreate('users', authData).then(() => {
+        postgres.userCreate(authData).then(() => {
             res.status(201).json({
                 message: 'Usuario creado exitosamente.'
             });
@@ -56,17 +59,13 @@ async function readUser(req, res, next) {
 }
 
 function decodifyHeader(req) {
-    const authorization = req.header.authorization || '';
+    const authorization = req.headers.authorization || '';
     if(!authorization)
         throw new Error('Token inexistente.');
     if(authorization.indexOf('Bearer') === -1)
         throw new Error('Formato inválido.');
     const token = authorization.split(' ')[1];
-    const decodified = jwt.verify(token, config.jwt.secret);
-    req.user = decodified;
-    if(decodified.id !== req.body.id)
-        throw new Error('Acceso denegado.');
-    return decodified;
+    return jwt.verify(token, config.jwt.secret);
 }
 
 export default { checkAuth, getUserFromToken, signIn, signUp, readUser, decodifyHeader }

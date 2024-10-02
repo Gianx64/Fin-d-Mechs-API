@@ -17,7 +17,7 @@ function conpg() {
     })
 }
 
-setTimeout(conpg, 10000);
+conpg();
 
 function readTable(table) {
     return new Promise((resolve) => {
@@ -37,7 +37,7 @@ function readWithId(table, id) {
 
 function userCreate(data) {
     return new Promise((resolve) => {
-        client.query(`INSERT INTO users (usuario, correo, clave, rol) VALUES ($1, $2, $3, $4)`, [data.usuario, data.correo, data.clave, data.rol], (error, result) => {
+        client.query(`INSERT INTO users (usuario, celular, correo, clave, rol) VALUES ($1, $2, $3, $4, $5)`, [data.usuario, data.celular, data.correo, data.clave, data.rol], (error, result) => {
             return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
         })
     })
@@ -46,14 +46,14 @@ function userCreate(data) {
 function userRead(correo) {
     return new Promise((resolve) => {
         client.query(`SELECT * FROM users WHERE correo = $1`, [correo], (error, result) => {
-            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
+            return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows[0]);
         })
     })
 }
 
 function userUpdate(data) {
     return new Promise((resolve) => {
-        client.query(`UPDATE users SET (usuario, correo, clave, rol) = ($1, $2, $3, $4) WHERE id = $5`, [data.usuario, data.correo, data.clave, data.rol, data.id], (error, result) => {
+        client.query(`UPDATE users SET (usuario, celular, correo, clave, rol) = ($1, $2, $3, $4, $5) WHERE id = $6`, [data.usuario, data.celular, data.correo, data.clave, data.rol, data.id], (error, result) => {
             return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
         })
     })
