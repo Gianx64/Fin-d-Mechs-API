@@ -43,7 +43,7 @@ function userCreate(data) {
     })
 }
 
-function userCreate(correo) {
+function userRead(correo) {
     return new Promise((resolve) => {
         client.query(`SELECT * FROM users WHERE correo = ${correo}`, (error, result) => {
             return error ? console.log('[DB err]: Code:',error.code, 'Message:', error.message) : resolve(result.rows);
@@ -156,4 +156,4 @@ function appointmentCommentMech(comment, id) {
     })
 }
 
-export default { readTable, readWithId, userCreate, userCreate, userUpdate, userDisable, appointmentCreate, appointmentsReadUser, appointmentsReadMech, appointmentUpdate, appointmentCancel, appointmentConfirm, appointmentCarTake, appointmentCarDeliver, appointmentComplete, appointmentCommentUser, appointmentCommentMech }
+export default { readTable, readWithId, userCreate, userRead, userUpdate, userDisable, appointmentCreate, appointmentsReadUser, appointmentsReadMech, appointmentUpdate, appointmentCancel, appointmentConfirm, appointmentCarTake, appointmentCarDeliver, appointmentComplete, appointmentCommentUser, appointmentCommentMech }
