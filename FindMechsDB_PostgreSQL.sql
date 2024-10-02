@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users(
     rol BIT(2) NOT NULL DEFAULT b'00',
     activo BOOLEAN NOT NULL DEFAULT TRUE
 );
-COMMENT ON TABLE users.rol IS '11=admin, 10=mech_verified, 01=mech_unverified, 00=user';
+COMMENT ON COLUMN users.rol IS '11=admin, 10=mech_verified, 01=mech_unverified, 00=user';
 CREATE TABLE IF NOT EXISTS workshops(
     id SMALLSERIAL PRIMARY KEY,
     usuario SMALLINT NOT NULL REFERENCES users(id),
@@ -42,4 +42,4 @@ CREATE TABLE IF NOT EXISTS appointments(
     mech_comentario VARCHAR(128),
     mech_comentario_tiempo TIMESTAMP
 );
-COMMENT ON TABLE appointments.canceladopor IS 'false=user, true=mech';
+COMMENT ON COLUMN appointments.canceladopor IS 'false=user, true=mech';

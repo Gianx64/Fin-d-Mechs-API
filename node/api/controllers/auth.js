@@ -51,6 +51,9 @@ async function signUp(req, res, next) {
 
 async function readUser(req, res, next) {
     try {
+        const decodified = decodifyHeader(req);
+        if (decodified.correo !== req.params.correo)
+            throw new Error('Acceso denegado.');
         const user = await postgres.userRead(req.params.correo);
         res.status(200).json({'user': user})
     } catch(err) {
