@@ -29,8 +29,13 @@ const signIn = (req, res, next) => {
 }
 
 async function signUp(req, res, next) {
+    authData = {
+        usuario: req.body.usuario,
+        correo: req.body.correo,
+        clave: await hash(req.body.clave.toString(), 6)
+    }
     try {
-        postgres.create('users', req.body).then(() => {
+        postgres.userCreate('users', authData).then(() => {
             res.status(201).json({
                 message: 'Usuario creado exitosamente.'
             });
@@ -42,7 +47,7 @@ async function signUp(req, res, next) {
 
 async function readUser(req, res, next) {
     try {
-        const user = await postgres.readUser(req.params.correo);
+        const user = await postgres.userRead(req.params.correo);
         res.status(200).json({'user': user})
     } catch(err) {
         next(err);
@@ -63,13 +68,4 @@ function decodifyHeader(req) {
     return decodified;
 }
 
-async function create(data) {
-    authData = {
-        usuario: data.usuario,
-        correo: data.correo,
-        clave: await hash(data.clave.toString(), 6)
-    }
-    postgres.create('users', authData);
-}
-
-export default { checkAuth, getUserFromToken, signIn, signUp, readUser, decodifyHeader, create }
+export default { checkAuth, getUserFromToken, signIn, signUp, readUser, decodifyHeader }
