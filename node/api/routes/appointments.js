@@ -8,6 +8,5 @@ router.get('/', authController.checkAuth, appointmentController.getAppointments)
 router.post('/', authController.checkAuth, appointmentController.postAppointment);
 router.get('/:appointmentId', authController.checkAuth, appointmentController.getAppointment);
 router.patch('/:appointmentId/:action', authController.checkAuth, appointmentController.patchAppointment);
-router.delete('/:appointmentId', authController.checkAuth, appointmentController.cancelAppointment);
 
 export default router;
