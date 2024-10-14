@@ -9,7 +9,10 @@ const checkAuth = (req, res, next) => {
 }
 
 const getUserFromToken = (req, res, next) => {
-    const user = decodifyHeader(req);
+    let user = decodifyHeader(req);
+    delete user['id'];
+    delete user['clave'];
+    delete user['activo'];
     res.status(200).json(user);
 }
 
@@ -36,7 +39,7 @@ async function signUp(req, res, next) {
         celular: req.body.celular,
         correo: req.body.correo,
         clave: await hash(req.body.clave.toString(), 6),
-        rol: req.body.rol
+        rol: req.body.rol ? "01" : "00"
     }
     try {
         postgres.userCreate(authData).then(() => {
