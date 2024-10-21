@@ -1,34 +1,61 @@
-import { hash, compare } from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import config from '../../config.js'
-import postgres from '../postgres.js'
+import { hash, compare } from "bcrypt"
+import jwt from "jsonwebtoken"
+import config from "../../config.js"
+import postgres from "../postgres.js"
 
 const checkAuth = (req, res, next) => {
-    decodifyHeader(req);
-    next();
+    const result = decodifyHeader(req);
+    if (!result.error) {
+        next();
+    } else {
+        res.status(409).json({
+            message: "Error.",
+            data: null
+        });
+    }
 }
 
 const getUserFromToken = (req, res, next) => {
-    let user = decodifyHeader(req);
-    delete user['clave'];
-    delete user['activo'];
-    res.status(200).json(user);
+    const user = decodifyHeader(req);
+    if (!user.error) {
+        res.status(200).json({
+            message: "Decodificación exitosa.",
+            data: user
+        });
+    }
 }
 
 async function signIn(req, res, next) {
     try {
-        const data = await postgres.userRead(req.body.correo);
-        if(!data) {
-            return res.status(404).json({message: 'Usuario no encontrado.'});
+        let result = await postgres.userRead(req.body.correo);
+        if (result.status == 500) {
+            return res.status(result.status).json({
+                message: result.message,
+                data: result.data
+            });
         }
-        const token = await compare(req.body.clave, data.clave).then(result => {
+        if (result.data.length == 0) {
+            return res.status(404).json({
+                message: "Usuario no encontrado.",
+                data: null
+            });
+        }
+        const token = await compare(req.body.clave, result.data.clave).then(result => {
             if(result === true) {
-                return jwt.sign(data, config.jwt.secret, {expiresIn: '7d'});
+                delete result.data["clave"];
+                delete result.data["activo"];
+                return jwt.sign(result.data, config.jwt.secret, { expiresIn: "7d" });
             } else {
-                throw new Error('Información inválida.');
+                return res.status(401).json({
+                    message: "Información inválida.",
+                    data: null
+                });
             }
         })
-        res.status(200).json({'token': token});
+        res.status(result.status).json({
+            message: "Token creado exitosamente.",
+            data: token
+        });
     } catch(err) {
         next(err);
     }
@@ -41,16 +68,13 @@ async function signUp(req, res, next) {
         correo: req.body.correo,
         clave: await hash(req.body.clave.toString(), 6),
         rol: req.body.rol ? "01" : "00"
-    }
+    };
     try {
-        postgres.userCreate(authData).then((result) => {
-            console.log("User created: "+result);
-            delete authData['clave'];
-            res.status(201).json({
-                message: 'Usuario creado exitosamente.',
-                user: authData
-            });
-        })
+        const result = await postgres.userCreate(authData);
+        res.status(result.status).json({
+            message: result.message,
+            data: result.data
+        });
     } catch(err) {
         next(err);
     }
@@ -60,9 +84,22 @@ async function readUser(req, res, next) {
     try {
         const decodified = decodifyHeader(req);
         if (decodified.correo !== req.params.correo)
-            throw new Error('Acceso denegado.');
-        const user = await postgres.userRead(req.params.correo);
-        res.status(200).json({'user': user})
+            return res.status(403).json({
+                message: "Acceso denegado.",
+                data: null
+            });
+        const result = await postgres.userRead(req.params.correo);
+        if (result.data.length == 1) {
+            res.status(result.status).json({
+                message: result.message,
+                data: result.data[0]
+            });
+        } else {
+            res.status(409).json({
+                message: "Error.",
+                data: null
+            });
+        }
     } catch(err) {
         next(err);
     }
@@ -71,9 +108,15 @@ async function readUser(req, res, next) {
 function decodifyHeader(req) {
     const authorization = req.headers.authorization || '';
     if(!authorization)
-        throw new Error('Token inexistente.');
-    if(authorization.indexOf('Bearer') === -1)
-        throw new Error('Formato inválido.');
+        return res.status(511).json({
+            message: "Token inexistente.",
+            data: null
+        });
+    if(authorization.indexOf("Bearer") === -1)
+        return res.status(511).json({
+            message: "Formato inválido.",
+            data: null
+        });
     const token = authorization.split(' ')[1];
     return jwt.verify(token, config.jwt.secret);
 }
