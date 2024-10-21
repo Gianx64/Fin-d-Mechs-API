@@ -10,7 +10,6 @@ const checkAuth = (req, res, next) => {
 
 const getUserFromToken = (req, res, next) => {
     let user = decodifyHeader(req);
-    delete user['id'];
     delete user['clave'];
     delete user['activo'];
     res.status(200).json(user);
@@ -19,6 +18,9 @@ const getUserFromToken = (req, res, next) => {
 async function signIn(req, res, next) {
     try {
         const data = await postgres.userRead(req.body.correo);
+        if(!data) {
+            return res.status(404).json({message: 'Usuario no encontrado.'});
+        }
         const token = await compare(req.body.clave, data.clave).then(result => {
             if(result === true) {
                 return jwt.sign(data, config.jwt.secret, {expiresIn: '7d'});
@@ -26,7 +28,6 @@ async function signIn(req, res, next) {
                 throw new Error('Información inválida.');
             }
         })
-        console.log("token generado: "+token);
         res.status(200).json({'token': token});
     } catch(err) {
         next(err);
@@ -42,9 +43,12 @@ async function signUp(req, res, next) {
         rol: req.body.rol ? "01" : "00"
     }
     try {
-        postgres.userCreate(authData).then(() => {
+        postgres.userCreate(authData).then((result) => {
+            console.log("User created: "+result);
+            delete authData['clave'];
             res.status(201).json({
-                message: 'Usuario creado exitosamente.'
+                message: 'Usuario creado exitosamente.',
+                user: authData
             });
         })
     } catch(err) {
