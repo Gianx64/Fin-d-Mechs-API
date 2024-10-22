@@ -4,23 +4,28 @@ import config from "../../config.js"
 import postgres from "../postgres.js"
 
 const checkAuth = (req, res, next) => {
-    const result = decodifyHeader(req);
-    if (!result.error) {
+    try {
+        decodifyHeader(req);
         next();
-    } else {
+    } catch(error) {
         res.status(409).json({
-            message: "Error.",
+            message: error.message,
             data: null
         });
     }
 }
 
 const getUserFromToken = (req, res, next) => {
-    const user = decodifyHeader(req);
-    if (!user.error) {
+    try {
+        const user = decodifyHeader(req);
         res.status(200).json({
             message: "Decodificación exitosa.",
             data: user
+        });
+    } catch(error) {
+        res.status(409).json({
+            message: error.message,
+            data: null
         });
     }
 }
