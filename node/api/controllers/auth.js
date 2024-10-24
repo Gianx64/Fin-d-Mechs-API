@@ -32,7 +32,7 @@ const getUserFromToken = (req, res, next) => {
 
 async function signIn(req, res, next) {
     try {
-        let result = await postgres.userRead(req.body.correo);
+        let result = await postgres.userRead(req.body.correo).then(result => { return result; });
         if (result.status == 500) {
             return res.status(result.status).json({
                 message: result.message,
@@ -50,17 +50,19 @@ async function signIn(req, res, next) {
                 delete result.data["clave"];
                 delete result.data["activo"];
                 return jwt.sign(result.data, config.jwt.secret, { expiresIn: "7d" });
-            } else {
-                return res.status(401).json({
-                    message: "Información inválida.",
-                    data: null
-                });
-            }
-        })
-        res.status(result.status).json({
-            message: "Token creado exitosamente.",
-            data: token
+            } else { return null; }
         });
+        if (token) {
+            res.status(result.status).json({
+                message: "Token creado exitosamente.",
+                data: token
+            });
+        } else {
+            res.status(401).json({
+                message: "Información inválida.",
+                data: null
+            });
+        }
     } catch(err) {
         next(err);
     }
@@ -75,10 +77,11 @@ async function signUp(req, res, next) {
         rol: req.body.rol ? "01" : "00"
     };
     try {
-        const result = await postgres.userCreate(authData);
-        res.status(result.status).json({
-            message: result.message,
-            data: result.data
+        await postgres.userCreate(authData).then(result => {
+            res.status(result.status).json({
+                message: result.message,
+                data: result.data
+            });
         });
     } catch(err) {
         next(err);
@@ -93,18 +96,19 @@ async function readUser(req, res, next) {
                 message: "Acceso denegado.",
                 data: null
             });
-        const result = await postgres.userRead(req.params.correo);
-        if (result.data.length == 1) {
-            res.status(result.status).json({
-                message: result.message,
-                data: result.data[0]
-            });
-        } else {
-            res.status(409).json({
-                message: "Error.",
-                data: null
-            });
-        }
+        await postgres.userRead(req.params.correo).then(result => {
+            if (result.data.length == 1) {
+                res.status(result.status).json({
+                    message: result.message,
+                    data: result.data[0]
+                });
+            } else {
+                res.status(409).json({
+                    message: "Error.",
+                    data: null
+                });
+            }
+        });
     } catch(err) {
         next(err);
     }
