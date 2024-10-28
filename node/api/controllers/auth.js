@@ -7,11 +7,8 @@ const checkAuth = (req, res, next) => {
     try {
         decodifyHeader(req);
         next();
-    } catch(error) {
-        res.status(409).json({
-            message: error.message,
-            data: null
-        });
+    } catch(err) {
+        next(err);
     }
 }
 
@@ -32,7 +29,7 @@ const getUserFromToken = (req, res, next) => {
 
 async function signIn(req, res, next) {
     try {
-        let result = await postgres.userRead(req.body.correo).then(result => { return result; });
+        let result = await postgres.userRead(req.body.correo);
         if (result.status == 500) {
             return res.status(result.status).json({
                 message: result.message,
@@ -77,11 +74,10 @@ async function signUp(req, res, next) {
         rol: req.body.rol ? "01" : "00"
     };
     try {
-        await postgres.userCreate(authData).then(result => {
-            res.status(result.status).json({
-                message: result.message,
-                data: result.data
-            });
+        const result = await postgres.userCreate(authData);
+        res.status(result.status).json({
+            message: result.message,
+            data: result.data
         });
     } catch(err) {
         next(err);
@@ -96,19 +92,18 @@ async function readUser(req, res, next) {
                 message: "Acceso denegado.",
                 data: null
             });
-        await postgres.userRead(req.params.correo).then(result => {
-            if (result.data.length == 1) {
-                res.status(result.status).json({
-                    message: result.message,
-                    data: result.data[0]
-                });
-            } else {
-                res.status(409).json({
-                    message: "Error.",
-                    data: null
-                });
-            }
-        });
+        const result = await postgres.userRead(req.params.correo);
+        if (result.data.length == 1) {
+            res.status(result.status).json({
+                message: result.message,
+                data: result.data[0]
+            });
+        } else {
+            res.status(409).json({
+                message: "Error.",
+                data: null
+            });
+        }
     } catch(err) {
         next(err);
     }

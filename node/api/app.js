@@ -26,9 +26,18 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
-    res.status(404).json({
+    const err = {
+        status: 404,
         message: "Not found",
         data: null
+    };
+    next(err);
+});
+
+app.use((err, req, res, next) => {
+    res.status(err.status || 500).json({
+        message: err.message,
+        data: err.data
     });
 });
 
