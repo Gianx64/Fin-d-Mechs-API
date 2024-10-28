@@ -14,107 +14,192 @@ const client = pool.connect((err) => {
     }
 })
 
-async function readTable(table) {
-    return pool.query("SELECT * FROM $1", [table], (error, result) => {
+function readTable(table) {
+    try {
+        const result = pool.query("SELECT * FROM $1", [table], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Lectura exitosa.", data: result.rows};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function readWithId(table, id) {
-    return pool.query("SELECT * FROM $1 WHERE id = $2", [table, id], (error, result) => {
+function readWithId(table, id) {
+    try {
+        const result = pool.query("SELECT * FROM $1 WHERE id = $2", [table, id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Lectura exitosa.", data: result.rows};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function userCreate(data) {
-    return pool.query("INSERT INTO users (usuario, celular, correo, clave, rol) VALUES ($1, $2, $3, $4, $5)", [data.usuario, data.celular, data.correo, data.clave, data.rol], (error, result) => {
+function userCreate(data) {
+    try {
+        const result = pool.query("INSERT INTO users (usuario, celular, correo, clave, rol) VALUES ($1, $2, $3, $4, $5)", [data.usuario, data.celular, data.correo, data.clave, data.rol], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 201, message: "Usuario creado exitosamente.", data: result.rowCount};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function userRead(correo) {
-    return pool.query("SELECT * FROM users WHERE correo = $1", [correo], (error, result) => {
+function userRead(correo) {
+    try {
+        const result = pool.query("SELECT * FROM users WHERE correo = $1", [correo], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Lectura exitosa.", data: result.rows};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function userUpdate(data) {
-    return pool.query("UPDATE users SET (usuario, celular, correo, clave, rol) = ($1, $2, $3, $4, $5) WHERE id = $6", [data.usuario, data.celular, data.correo, data.clave, data.rol, data.id], (error, result) => {
+function userUpdate(data) {
+    try {
+        const result = pool.query("UPDATE users SET (usuario, celular, correo, clave, rol) = ($1, $2, $3, $4, $5) WHERE id = $6", [data.usuario, data.celular, data.correo, data.clave, data.rol, data.id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Usuario actualizado exitosamente.", data: result.rowCount};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function userDisable(id) {
-    return pool.query("UPDATE users SET activo = FALSE WHERE id = $1", [id], (error, result) => {
+function userDisable(id) {
+    try {
+        const result = pool.query("UPDATE users SET activo = FALSE WHERE id = $1", [id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Usuario desactivado exitosamente.", data: result.rowCount};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function appointmentCreate(data) {
-    return pool.query("INSERT INTO appointments (usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)", [data.usuario, data.fecha, data.ciudad, data.direccion, data.auto_marca, data.auto_modelo, data.detalles, data.mech, data.servicio, data.id_taller], (error, result) => {
+function appointmentCreate(data) {
+    try {
+        const result = pool.query("INSERT INTO appointments (usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)", [data.usuario, data.fecha, data.ciudad, data.direccion, data.auto_marca, data.auto_modelo, data.detalles, data.mech, data.servicio, data.id_taller], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 201, message: "Cita creada exitosamente.", data: result.rowCount};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function appointmentsReadUser(id) {
-    return pool.query("SELECT * FROM appointments WHERE usuario = $1", [id], (error, result) => {
+function appointmentsReadUser(id) {
+    try {
+        const result = pool.query("SELECT * FROM appointments WHERE usuario = $1", [id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Lectura exitosa.", data: result.rows};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function appointmentsReadMech(id) {
-    return pool.query("SELECT * FROM appointments WHERE mech = $1", [id], (error, result) => {
+function appointmentsReadMech(id) {
+    try {
+        const result = pool.query("SELECT * FROM appointments WHERE mech = $1", [id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Lectura exitosa.", data: result.rows};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function appointmentUpdate(data) {
-    return pool.query("UPDATE appointments SET (usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller, actualizado) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW()) WHERE id = $11", [data.usuario, data.fecha, data.ciudad, data.direccion, data.auto_marca, data.auto_modelo, data.detalles, data.mech, data.servicio, data.id_taller, data.id], (error, result) => {
+function appointmentUpdate(data) {
+    try {
+        const result = pool.query("UPDATE appointments SET (usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller, actualizado) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW()) WHERE id = $11", [data.usuario, data.fecha, data.ciudad, data.direccion, data.auto_marca, data.auto_modelo, data.detalles, data.mech, data.servicio, data.id_taller, data.id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Cita actualizada exitosamente.", data: result.rowCount};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function appointmentCancel(who, id) {
+function appointmentCancel(who, id) {
 	const canceller = who? true: false;
-    return pool.query("UPDATE appointments SET actualizado = NOW(), cancelado = NOW(), canceladopor = $1 WHERE id = $2", [canceller, id], (error, result) => {
+    try {
+        const result = pool.query("UPDATE appointments SET actualizado = NOW(), cancelado = NOW(), canceladopor = $1 WHERE id = $2", [canceller, id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Cita cancelada exitosamente.", data: result.rowCount};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function appointmentConfirm(id) {
-    return pool.query("UPDATE appointments SET actualizado = NOW(), confirmado = NOW() WHERE id = $1", [id], (error, result) => {
+function appointmentConfirm(id) {
+    try {
+        const result = pool.query("UPDATE appointments SET actualizado = NOW(), confirmado = NOW() WHERE id = $1", [id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Cita confirmada exitosamente.", data: result.rowCount};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function appointmentCarTake(id) {
-    return pool.query("UPDATE appointments SET actualizado = NOW(), auto_tomado = NOW() WHERE id = $1", [id], (error, result) => {
+function appointmentCarTake(id) {
+    try {
+        const result = pool.query("UPDATE appointments SET actualizado = NOW(), auto_tomado = NOW() WHERE id = $1", [id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Cita actualizada exitosamente.", data: result.rowCount};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function appointmentCarDeliver(id) {
-    return pool.query("UPDATE appointments SET actualizado = NOW(), auto_devuelto = NOW() WHERE id = $1", [id], (error, result) => {
+function appointmentCarDeliver(id) {
+    try {
+        const result = pool.query("UPDATE appointments SET actualizado = NOW(), auto_devuelto = NOW() WHERE id = $1", [id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Cita actualizada exitosamente.", data: result.rowCount};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function appointmentComplete(id) {
-    return pool.query(`UPDATE appointments SET actualizado = NOW(), completado = NOW() WHERE id = $1`, [id], (error, result) => {
+function appointmentComplete(id) {
+    try {
+        const result = pool.query(`UPDATE appointments SET actualizado = NOW(), completado = NOW() WHERE id = $1`, [id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Cita actualizada exitosamente.", data: result.rowCount};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function appointmentCommentUser(comment, id) {
-    return pool.query("UPDATE appointments SET actualizado = NOW(), usuario_comentario_tiempo = NOW(), usuario_comentario = $1 WHERE id = $2", [comment, id], (error, result) => {
+function appointmentCommentUser(comment, id) {
+    try {
+        const result = pool.query("UPDATE appointments SET actualizado = NOW(), usuario_comentario_tiempo = NOW(), usuario_comentario = $1 WHERE id = $2", [comment, id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Cita actualizada exitosamente.", data: result.rowCount};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
-async function appointmentCommentMech(comment, id) {
-    return pool.query("UPDATE appointments SET actualizado = NOW(), mech_comentario_tiempo = NOW(), mech_comentario = $1 WHERE id = $2", [comment, id], (error, result) => {
+function appointmentCommentMech(comment, id) {
+    try {
+        const result = pool.query("UPDATE appointments SET actualizado = NOW(), mech_comentario_tiempo = NOW(), mech_comentario = $1 WHERE id = $2", [comment, id], (error, result) => {
             return error ? { status: 500, message: `Error ${error.code}: ${error.detail}`, data: null} : { status: 200, message: "Cita actualizada exitosamente.", data: result.rowCount};
         });
+        return result;
+    } catch (error) {
+        return { status: 500, message: error, data: null};
+    }
 }
 
 export default { readTable, readWithId, userCreate, userRead, userUpdate, userDisable, appointmentCreate, appointmentsReadUser, appointmentsReadMech, appointmentUpdate, appointmentCancel, appointmentConfirm, appointmentCarTake, appointmentCarDeliver, appointmentComplete, appointmentCommentUser, appointmentCommentMech }
