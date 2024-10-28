@@ -30,7 +30,7 @@ const getUserFromToken = (req, res, next) => {
 async function signIn(req, res, next) {
     try {
         let result = await postgres.userRead(req.body.correo);
-        if (result.status == 500) {
+        if (result.status == 409) {
             return res.status(result.status).json({
                 message: result.message,
                 data: result.data
