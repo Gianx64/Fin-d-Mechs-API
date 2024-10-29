@@ -1,161 +1,209 @@
 import postgres from "../postgres.js";
 import authController from "../controllers/auth.js";
 
-const getAppointments = (req, res, next) => {
+const getAppointments = async (req, res, next) => {
     try {
-        const result = postgres.readTable("appointments");
-        res.status(result.status).json({
-            message: result.message,
-            data: result.data
-        });
+        const user = authController.decodifyHeader(req.headers.authorization);
+        let result;
+        if (user.rol == "00") {
+            result = await postgres.appointmentsReadUser(user.id);
+        } else if (user.rol == "10") {
+            result = await postgres.appointmentsReadMech(user.id);
+        }
+        if (result) {
+            res.status(result.status).json({
+                message: result.message,
+                data: result.data
+            });
+        } else {
+            res.status(409).json({
+                message: "Error obteniendo citas.",
+                data: null
+            });
+        }
     } catch(err) {
         next(err);
     }
 }
 
-const postAppointment = (req, res, next) => {
+const postAppointment = async (req, res, next) => {
     try {
-        const result = postgres.appointmentCreate(req.body);
-        res.status(result.status).json({
-            message: result.message,
-            data: result.data
-        });
+        const result = await postgres.appointmentCreate(req.body);
+        if (result) {
+            res.status(result.status).json({
+                message: result.message,
+                data: result.data
+            });
+        }
     } catch(err) {
         next(err);
     }
 }
 
-const getAppointment = (req, res, next) => {
+const getAppointment = async (req, res, next) => {
     try {
-        const result = postgres.readWithId("appointments", req.params.appointmentId);
-        res.status(result.status).json({
-            message: result.message,
-            data: result.data[0]
-        });
+        const result = await postgres.readWithId("appointments", req.params.appointmentId);
+        if (result) {
+            res.status(result.status).json({
+                message: result.message,
+                data: result.data[0]
+            });
+        }
     } catch(err) {
         next(err);
     }
 }
 
-//TODO: mejorar todo
-const patchAppointment = (req, res, next) => {
+const patchAppointment = async (req, res, next) => {
     const user = authController.decodifyHeader(req);
+    let result;
     switch (req.params.action) {
         case '0':
-            if (req.body.confirmado || req.body.cancelado)
-                throw new Error("La cita ya no se puede modificar.");
-            try {
-                postgres.appointmentUpdate(req.body).then(() => {
-                    res.status(200).json({
-                        message: "Cita actualizada exitosamente."
-                    });
-                })
-            } catch(err) {
-                next(err);
+            if (req.body.confirmado || req.body.cancelado) {
+                res.status(409).json({
+                    message: "La cita ya no se puede modificar.",
+                    data: null
+                });
+            } else {
+                try {
+                    result = await postgres.appointmentUpdate(req.body);
+                    if (result) {
+                        res.status(result.status).json({
+                            message: result.message,
+                            data: result.data
+                        });
+                    }
+                } catch(err) {
+                    next(err);
+                }
             }
             break;
         case '1':
-            if (req.body.confirmado || req.body.cancelado)
-                throw new Error("La cita ya no se puede modificar.");
-            try {
-                postgres.appointmentCancel(req.body.id).then(() => {
-                    res.status(200).json({
-                        message: "Cita cancelada exitosamente."
-                    });
-                })
-            } catch(err) {
-                next(err);
+            if (req.body.confirmado || req.body.cancelado) {
+                res.status(409).json({
+                    message: "La cita ya no se puede modificar.",
+                    data: null
+                });
+            } else {
+                try {
+                    result = await postgres.appointmentCancel(req.body.id);
+                    if (result) {
+                        res.status(result.status).json({
+                            message: result.message,
+                            data: result.data
+                        });
+                    }
+                } catch(err) {
+                    next(err);
+                }
             }
             break;
         case '2':
-            if (user.rol !== "10")
-                throw new Error("Solo el mech puede confirmar una cita.");
-            try {
-                postgres.appointmentConfirm(req.body.id).then(() => {
-                    res.status(200).json({
-                        message: "Cita confirmada exitosamente."
-                    });
-                })
-            } catch(err) {
-                next(err);
+            if (user.rol !== "10") {
+                res.status(409).json({
+                    message: "Solo el mech puede confirmar una cita.",
+                    data: null
+                });
+            } else {
+                try {
+                    result = await postgres.appointmentConfirm(req.body.id);
+                    if (result) {
+                        res.status(result.status).json({
+                            message: result.message,
+                            data: result.data
+                        });
+                    }
+                } catch(err) {
+                    next(err);
+                }
             }
             break;
         case '3':
             try {
-                postgres.appointmentCarTake(req.body.id).then(() => {
-                    res.status(200).json({
-                        message: "Cita actualizada exitosamente."
+                result = await postgres.appointmentCarTake(req.body.id);
+                if (result) {
+                    res.status(result.status).json({
+                        message: result.message,
+                        data: result.data
                     });
-                })
+                }
             } catch(err) {
                 next(err);
             }
             break;
         case '4':
             try {
-                postgres.appointmentCarDeliver(req.body.id).then(() => {
-                    res.status(200).json({
-                        message: "Cita actualizada exitosamente."
+                result = await postgres.appointmentCarDeliver(req.body.id);
+                if (result) {
+                    res.status(result.status).json({
+                        message: result.message,
+                        data: result.data
                     });
-                })
+                }
             } catch(err) {
                 next(err);
             }
             break;
         case '5':
             try {
-                postgres.appointmentComplete(req.body.id).then(() => {
-                    res.status(200).json({
-                        message: "Cita actualizada exitosamente."
+                result = await postgres.appointmentComplete(req.body.id);
+                if (result) {
+                    res.status(result.status).json({
+                        message: result.message,
+                        data: result.data
                     });
-                })
+                }
             } catch(err) {
                 next(err);
             }
             break;
         case '6':
-            //TODO: verify if user
-            if (user.rol !== "10")
-                throw new Error("Solo el usuario puede comentar como usuario.");
-            try {
-                postgres.appointmentCommentUser(req.body).then(() => {
-                    res.status(200).json({
-                        message: "Cita actualizada exitosamente."
-                    });
-                })
-            } catch(err) {
-                next(err);
+            if (user.rol !== "00") {
+                res.status(409).json({
+                    message: "Solo el usuario puede comentar como usuario.",
+                    data: null
+                });
+            } else {
+                try {
+                    result = await postgres.appointmentCommentUser(req.body);
+                    if (result) {
+                        res.status(result.status).json({
+                            message: result.message,
+                            data: result.data
+                        });
+                    }
+                } catch(err) {
+                    next(err);
+                }
             }
             break;
         case '7':
-            //TODO: verify if mech
-            if (user.rol !== "10")
-                throw new Error("Solo el mech puede comentar como mech.");
-            try {
-                postgres.appointmentCommentMech(req.body).then(() => {
-                    res.status(200).json({
-                        message: "Cita actualizada exitosamente."
-                    });
-                })
-            } catch(err) {
-                next(err);
+            if (user.rol !== "10") {
+                res.status(409).json({
+                    message: "Solo el mech puede comentar como mech.",
+                    data: null
+                });
+            } else {
+                try {
+                    result = await postgres.appointmentCommentMech(req.body);
+                    if (result) {
+                        res.status(result.status).json({
+                            message: result.message,
+                            data: result.data
+                        });
+                    }
+                } catch(err) {
+                    next(err);
+                }
             }
             break;
         default:
+            res.status(409).json({
+                message: "Acción no especificada.",
+                data: null
+            });
             break;
     }
 }
 
-const cancelAppointment = (req, res, next) => {
-    try {
-        postgres.appointmentCancel(req.params.appointmentId).then(() => {
-            res.status(200).json({
-                message: "Cita cancelada exitosamente."
-            });
-        })
-    } catch(err) {
-        next(err);
-    }
-}
-
-export default {getAppointments, postAppointment, getAppointment, patchAppointment, cancelAppointment}
+export default {getAppointments, postAppointment, getAppointment, patchAppointment}

@@ -3,18 +3,20 @@ import jwt from "jsonwebtoken"
 import config from "../../config.js"
 import postgres from "../postgres.js"
 
+//Middleware to check if authorization token is valid
 const checkAuth = (req, res, next) => {
     try {
-        decodifyHeader(req);
+        decodifyHeader(req.headers.authorization);
         next();
     } catch(err) {
         next(err);
     }
 }
 
+//Authorization token decodifier, returns user data
 const getUserFromToken = (req, res, next) => {
     try {
-        const user = decodifyHeader(req);
+        const user = decodifyHeader(req.headers.authorization);
         res.status(200).json({
             message: "Decodificación exitosa.",
             data: user
@@ -27,9 +29,13 @@ const getUserFromToken = (req, res, next) => {
     }
 }
 
+//Sign in function with email and password, returns authorization token
 async function signIn(req, res, next) {
     try {
         let result = await postgres.userRead(req.body.correo);
+        if (result.status == 500) {
+            next(result);
+        }
         if (result.status == 409) {
             return res.status(result.status).json({
                 message: result.message,
@@ -65,7 +71,9 @@ async function signIn(req, res, next) {
     }
 }
 
+//Register new user, returns user data
 async function signUp(req, res, next) {
+    //TODO: verificar celular
     const authData = {
         usuario: req.body.usuario,
         celular: req.body.celular,
@@ -73,26 +81,42 @@ async function signUp(req, res, next) {
         clave: await hash(req.body.clave.toString(), 6),
         rol: req.body.rol ? "01" : "00"
     };
-    try {
-        const result = await postgres.userCreate(authData);
-        res.status(result.status).json({
-            message: result.message,
-            data: result.data
+    if (req.body.correo.indexOf('@') === -1 || req.body.correo.indexOf('.') === -1) {
+        res.status(409).json({
+            message: "Correo inválido.",
+            data: null
         });
-    } catch(err) {
-        next(err);
+    } else {
+        try {
+            const result = await postgres.userCreate(authData);
+            delete result.data["clave"];
+            delete result.data["activo"];
+            if (result.status == 500) {
+                next(result);
+            }
+            res.status(result.status).json({
+                message: result.message,
+                data: result.data
+            });
+        } catch(err) {
+            next(err);
+        }
     }
 }
 
+//Returns user data if token matches database user data
 async function readUser(req, res, next) {
     try {
-        const decodified = decodifyHeader(req);
+        const decodified = decodifyHeader(req.headers.authorization);
         if (decodified.correo !== req.params.correo)
             return res.status(403).json({
                 message: "Acceso denegado.",
                 data: null
             });
         const result = await postgres.userRead(req.params.correo);
+        if (result.status == 500) {
+            next(result);
+        }
         if (result.data.length == 1) {
             res.status(result.status).json({
                 message: result.message,
@@ -109,8 +133,9 @@ async function readUser(req, res, next) {
     }
 }
 
-function decodifyHeader(req) {
-    const authorization = req.headers.authorization || '';
+//Decrypts authentication token, returns decripted user data
+function decodifyHeader(authorization) {
+    const authorization = authorization || '';
     if(!authorization)
         return res.status(511).json({
             message: "Token inexistente.",

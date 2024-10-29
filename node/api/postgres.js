@@ -12,7 +12,7 @@ const client = pool.connect((err) => {
     if(!err) {
         console.log("[DB suc]: connected.");
     }
-})
+});
 
 function readTable(table) {
     try {
@@ -22,9 +22,9 @@ function readTable(table) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function readWithId(table, id) {
     try {
@@ -34,21 +34,21 @@ function readWithId(table, id) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function userCreate(data) {
     try {
         return new Promise((resolve) => {
-            pool.query("INSERT INTO users (usuario, celular, correo, clave, rol) VALUES ($1, $2, $3, $4, $5)", [data.usuario, data.celular, data.correo, data.clave, data.rol], (error, result) => {
+            pool.query("INSERT INTO users (usuario, celular, correo, clave, rol) VALUES ($1, $2, $3, $4, $5) RETURNING *", [data.usuario, data.celular, data.correo, data.clave, data.rol], (error, result) => {
                 error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 201, message: "Usuario creado exitosamente.", data: result.rowCount});
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function userRead(correo) {
     try {
@@ -58,9 +58,9 @@ function userRead(correo) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function userUpdate(data) {
     try {
@@ -70,9 +70,9 @@ function userUpdate(data) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function userDisable(id) {
     try {
@@ -82,9 +82,9 @@ function userDisable(id) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function appointmentCreate(data) {
     try {
@@ -94,9 +94,9 @@ function appointmentCreate(data) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function appointmentsReadUser(id) {
     try {
@@ -106,9 +106,9 @@ function appointmentsReadUser(id) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function appointmentsReadMech(id) {
     try {
@@ -118,9 +118,9 @@ function appointmentsReadMech(id) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function appointmentUpdate(data) {
     try {
@@ -130,9 +130,9 @@ function appointmentUpdate(data) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function appointmentCancel(who, id) {
 	const canceller = who? true: false;
@@ -143,9 +143,9 @@ function appointmentCancel(who, id) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function appointmentConfirm(id) {
     try {
@@ -155,9 +155,9 @@ function appointmentConfirm(id) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function appointmentCarTake(id) {
     try {
@@ -167,9 +167,9 @@ function appointmentCarTake(id) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function appointmentCarDeliver(id) {
     try {
@@ -179,9 +179,9 @@ function appointmentCarDeliver(id) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function appointmentComplete(id) {
     try {
@@ -191,9 +191,9 @@ function appointmentComplete(id) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function appointmentCommentUser(comment, id) {
     try {
@@ -203,9 +203,9 @@ function appointmentCommentUser(comment, id) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 function appointmentCommentMech(comment, id) {
     try {
@@ -215,8 +215,8 @@ function appointmentCommentMech(comment, id) {
             });
         });
     } catch (error) {
-        return { status: 409, message: error, data: null};
+        return { status: 500, message: error, data: null};
     }
-}
+};
 
 export default { readTable, readWithId, userCreate, userRead, userUpdate, userDisable, appointmentCreate, appointmentsReadUser, appointmentsReadMech, appointmentUpdate, appointmentCancel, appointmentConfirm, appointmentCarTake, appointmentCarDeliver, appointmentComplete, appointmentCommentUser, appointmentCommentMech }
