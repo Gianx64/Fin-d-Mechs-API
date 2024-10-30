@@ -89,15 +89,15 @@ async function signUp(req, res, next) {
     } else {
         try {
             let result = await postgres.userCreate(authData);
+            if (result.status != 201) {
+                next(result);
+            }
             delete result.data["usuario"];
             delete result.data["celular"];
             delete result.data["correo"];
             delete result.data["clave"];
             delete result.data["activo"];
-            result = { ...result, token: jwt.sign(result.data, config.jwt.secret, { expiresIn: "7d" })};
-            if (result.status == 500) {
-                next(result);
-            }
+            result.data = { ...result.data, token: jwt.sign(result.data, config.jwt.secret, { expiresIn: "7d" })};
             res.status(result.status).json({
                 message: result.message,
                 data: result.data
