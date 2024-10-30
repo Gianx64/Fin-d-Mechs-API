@@ -8,23 +8,19 @@ pool.on('error', (err, client) => {
     console.log("[DB err]:", err.code, err.message);
     process.exit(-1);
 });
-const client = pool.connect((err) => {
-    if(!err) {
-        console.log("[DB suc]: connected.");
-    }
-});
 
-function readTable(table) {
-    try {
-        return new Promise((resolve) => {
-            pool.query("SELECT * FROM $1", [table], (error, result) => {
-                error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows});
-            });
-        });
-    } catch (error) {
-        return { status: 500, message: error, data: null};
-    }
-};
+async function conpg() {
+    pool.connect((err) => {
+        if(err) {
+            console.log("[DB err]:", err.code, err.message);
+            setTimeout(conpg, 10000);
+        } else {
+            console.log("[DB suc]: connected.");
+        }
+    });
+}
+
+conpg();
 
 function readWithId(table, id) {
     try {
@@ -54,7 +50,7 @@ function userRead(correo) {
     try {
         return new Promise((resolve) => {
             pool.query("SELECT * FROM users WHERE correo = $1", [correo], (error, result) => {
-                error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows[0]});
+                error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows});
             });
         });
     } catch (error) {
@@ -219,4 +215,4 @@ function appointmentCommentMech(comment, id) {
     }
 };
 
-export default { readTable, readWithId, userCreate, userRead, userUpdate, userDisable, appointmentCreate, appointmentsReadUser, appointmentsReadMech, appointmentUpdate, appointmentCancel, appointmentConfirm, appointmentCarTake, appointmentCarDeliver, appointmentComplete, appointmentCommentUser, appointmentCommentMech }
+export default { readWithId, userCreate, userRead, userUpdate, userDisable, appointmentCreate, appointmentsReadUser, appointmentsReadMech, appointmentUpdate, appointmentCancel, appointmentConfirm, appointmentCarTake, appointmentCarDeliver, appointmentComplete, appointmentCommentUser, appointmentCommentMech }

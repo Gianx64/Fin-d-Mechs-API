@@ -35,17 +35,17 @@ async function signIn(req, res, next) {
         let userResult = await postgres.userRead(req.body.correo);
         if (userResult.status != 200) {
             next(userResult);
-        } else if (userResult.data.length == 0) {
+        } else if (userResult.data == []) {
             res.status(404).json({
                 message: "Usuario no encontrado.",
                 data: null
             });
         } else {
-            const token = await compare(req.body.clave, userResult.data.clave).then(fulfilled => {
+            const token = await compare(req.body.clave, userResult.data[0].clave).then(fulfilled => {
                 if(fulfilled === true) {
-                    delete userResult.data["clave"];
-                    delete userResult.data["activo"];
-                    return jwt.sign(userResult.data, config.jwt.secret, { expiresIn: "7d" });
+                    delete userResult.data[0]["clave"];
+                    delete userResult.data[0]["activo"];
+                    return jwt.sign(userResult.data[0], config.jwt.secret, { expiresIn: "7d" });
                 } else { return null; }
             });
             if (token) {
