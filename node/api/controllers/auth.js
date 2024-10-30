@@ -51,7 +51,7 @@ async function signIn(req, res, next) {
             if (token) {
                 res.status(userResult.status).json({
                     message: "Token creado exitosamente.",
-                    data: token
+                    data: { ...userResult, token: token }
                 });
             } else {
                 res.status(401).json({
@@ -72,7 +72,7 @@ async function signUp(req, res, next) {
         const authData = {
             usuario: req.body.usuario,
             celular: req.body.celular,
-            correo: req.body.correo,
+            correo: req.body.correo.toLowerCase(),
             clave: await hash(req.body.clave.toString(), 6),
             rol: req.body.rol ? "01" : "00"
         };
@@ -86,12 +86,12 @@ async function signUp(req, res, next) {
                 if (userResult.status != 201) {
                     next(userResult);
                 } else {
+                    userResult.data = { ...userResult.data, token: jwt.sign(userResult.data, config.jwt.secret, { expiresIn: "7d" })};
                     delete userResult.data["usuario"];
                     delete userResult.data["celular"];
                     delete userResult.data["correo"];
                     delete userResult.data["clave"];
                     delete userResult.data["activo"];
-                    userResult.data = { ...userResult.data, token: jwt.sign(userResult.data, config.jwt.secret, { expiresIn: "7d" })};
                     res.status(userResult.status).json({
                         message: userResult.message,
                         data: userResult.data
