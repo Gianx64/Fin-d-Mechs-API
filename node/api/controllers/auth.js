@@ -32,39 +32,33 @@ const getUserFromToken = (req, res, next) => {
 //Sign in function with email and password, returns authorization token
 async function signIn(req, res, next) {
     try {
-        let result = await postgres.userRead(req.body.correo);
-        if (result.status == 500) {
-            next(result);
-        }
-        if (result.status == 409) {
-            return res.status(result.status).json({
-                message: result.message,
-                data: result.data
-            });
-        }
-        if (result.data.length == 0) {
-            return res.status(404).json({
+        let userResult = await postgres.userRead(req.body.correo);
+        if (userResult.status != 200) {
+            next(userResult);
+        } else if (userResult.data.length == 0) {
+            res.status(404).json({
                 message: "Usuario no encontrado.",
                 data: null
             });
-        }
-        const token = await compare(req.body.clave, result.data.clave).then(result => {
-            if(result === true) {
-                delete result.data["clave"];
-                delete result.data["activo"];
-                return jwt.sign(result.data, config.jwt.secret, { expiresIn: "7d" });
-            } else { return null; }
-        });
-        if (token) {
-            res.status(result.status).json({
-                message: "Token creado exitosamente.",
-                data: token
-            });
         } else {
-            res.status(401).json({
-                message: "Información inválida.",
-                data: null
+            const token = await compare(req.body.clave, userResult.data.clave).then(fulfilled => {
+                if(fulfilled === true) {
+                    delete userResult.data["clave"];
+                    delete userResult.data["activo"];
+                    return jwt.sign(userResult.data, config.jwt.secret, { expiresIn: "7d" });
+                } else { return null; }
             });
+            if (token) {
+                res.status(userResult.status).json({
+                    message: "Token creado exitosamente.",
+                    data: token
+                });
+            } else {
+                res.status(401).json({
+                    message: "Información inválida.",
+                    data: null
+                });
+            }
         }
     } catch(err) {
         next(err);
@@ -74,37 +68,38 @@ async function signIn(req, res, next) {
 //Register new user, returns user data, including token
 async function signUp(req, res, next) {
     //TODO: verificar celular
-    const authData = {
-        usuario: req.body.usuario,
-        celular: req.body.celular,
-        correo: req.body.correo,
-        clave: await hash(req.body.clave.toString(), 6),
-        rol: req.body.rol ? "01" : "00"
-    };
-    if (req.body.correo.indexOf('@') === -1 || req.body.correo.indexOf('.') === -1) {
-        res.status(409).json({
-            message: "Correo inválido.",
-            data: null
-        });
-    } else {
-        try {
-            let result = await postgres.userCreate(authData);
-            if (result.status != 201) {
-                next(result);
-            }
-            delete result.data["usuario"];
-            delete result.data["celular"];
-            delete result.data["correo"];
-            delete result.data["clave"];
-            delete result.data["activo"];
-            result.data = { ...result.data, token: jwt.sign(result.data, config.jwt.secret, { expiresIn: "7d" })};
-            res.status(result.status).json({
-                message: result.message,
-                data: result.data
+    try {
+        const authData = {
+            usuario: req.body.usuario,
+            celular: req.body.celular,
+            correo: req.body.correo,
+            clave: await hash(req.body.clave.toString(), 6),
+            rol: req.body.rol ? "01" : "00"
+        };
+        if (req.body.correo.indexOf('@') === -1 || req.body.correo.indexOf('.') === -1) {
+            res.status(409).json({
+                message: "Correo inválido.",
+                data: null
             });
-        } catch(err) {
-            next(err);
+        } else {
+                let userResult = await postgres.userCreate(authData);
+                if (userResult.status != 201) {
+                    next(userResult);
+                } else {
+                    delete userResult.data["usuario"];
+                    delete userResult.data["celular"];
+                    delete userResult.data["correo"];
+                    delete userResult.data["clave"];
+                    delete userResult.data["activo"];
+                    userResult.data = { ...userResult.data, token: jwt.sign(userResult.data, config.jwt.secret, { expiresIn: "7d" })};
+                    res.status(userResult.status).json({
+                        message: userResult.message,
+                        data: userResult.data
+                    });
+                }
         }
+    } catch(err) {
+        next(err);
     }
 }
 
@@ -112,25 +107,27 @@ async function signUp(req, res, next) {
 async function readUser(req, res, next) {
     try {
         const decodified = decodifyHeader(req.headers.authorization);
-        if (decodified.correo !== req.params.correo)
-            return res.status(403).json({
+        if (decodified.correo !== req.params.correo) {
+            res.status(403).json({
                 message: "Acceso denegado.",
                 data: null
             });
-        const result = await postgres.userRead(req.params.correo);
-        if (result.status == 500) {
-            next(result);
-        }
-        if (result.data.length == 1) {
-            res.status(result.status).json({
-                message: result.message,
-                data: result.data[0]
-            });
         } else {
-            res.status(409).json({
-                message: "Error.",
-                data: null
-            });
+            const userResult = await postgres.userRead(req.params.correo);
+            if (userResult.status != 200) {
+                next(userResult);
+            }
+            if (userResult.data.length == 1) {
+                res.status(userResult.status).json({
+                    message: userResult.message,
+                    data: userResult.data[0]
+                });
+            } else {
+                res.status(409).json({
+                    message: "Error.",
+                    data: null
+                });
+            }
         }
     } catch(err) {
         next(err);
@@ -154,4 +151,4 @@ function decodifyHeader(authorization) {
     return jwt.verify(token, config.jwt.secret);
 }
 
-export default { checkAuth, getUserFromToken, signIn, signUp, readUser, decodifyHeader }
+export default { checkAuth, getUserFromToken, signIn, signUp, readUser }

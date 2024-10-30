@@ -4,7 +4,7 @@ import authController from "../controllers/auth.js";
 const getAppointments = async (req, res, next) => {
     try {
         const user = authController.decodifyHeader(req.headers.authorization);
-        let result;
+        let result = null;
         if (user.rol == "00") {
             result = await postgres.appointmentsReadUser(user.id);
         } else if (user.rol == "10") {
@@ -55,17 +55,17 @@ const getAppointment = async (req, res, next) => {
 }
 
 const patchAppointment = async (req, res, next) => {
-    const user = authController.decodifyHeader(req);
-    let result;
-    switch (req.params.action) {
-        case '0':
-            if (req.body.confirmado || req.body.cancelado) {
-                res.status(409).json({
-                    message: "La cita ya no se puede modificar.",
-                    data: null
-                });
-            } else {
-                try {
+    try {
+        const user = authController.decodifyHeader(req);
+        let result;
+        switch (req.params.action) {
+            case '0':
+                if (req.body.confirmado || req.body.cancelado) {
+                    res.status(409).json({
+                        message: "La cita ya no se puede modificar.",
+                        data: null
+                    });
+                } else {
                     result = await postgres.appointmentUpdate(req.body);
                     if (result) {
                         res.status(result.status).json({
@@ -73,19 +73,15 @@ const patchAppointment = async (req, res, next) => {
                             data: result.data
                         });
                     }
-                } catch(err) {
-                    next(err);
                 }
-            }
-            break;
-        case '1':
-            if (req.body.confirmado || req.body.cancelado) {
-                res.status(409).json({
-                    message: "La cita ya no se puede modificar.",
-                    data: null
-                });
-            } else {
-                try {
+                break;
+            case '1':
+                if (req.body.confirmado || req.body.cancelado) {
+                    res.status(409).json({
+                        message: "La cita ya no se puede modificar.",
+                        data: null
+                    });
+                } else {
                     result = await postgres.appointmentCancel(req.body.id);
                     if (result) {
                         res.status(result.status).json({
@@ -93,19 +89,15 @@ const patchAppointment = async (req, res, next) => {
                             data: result.data
                         });
                     }
-                } catch(err) {
-                    next(err);
                 }
-            }
-            break;
-        case '2':
-            if (user.rol !== "10") {
-                res.status(409).json({
-                    message: "Solo el mech puede confirmar una cita.",
-                    data: null
-                });
-            } else {
-                try {
+                break;
+            case '2':
+                if (user.rol !== "10") {
+                    res.status(409).json({
+                        message: "Solo el mech puede confirmar una cita.",
+                        data: null
+                    });
+                } else {
                     result = await postgres.appointmentConfirm(req.body.id);
                     if (result) {
                         res.status(result.status).json({
@@ -113,13 +105,9 @@ const patchAppointment = async (req, res, next) => {
                             data: result.data
                         });
                     }
-                } catch(err) {
-                    next(err);
                 }
-            }
-            break;
-        case '3':
-            try {
+                break;
+            case '3':
                 result = await postgres.appointmentCarTake(req.body.id);
                 if (result) {
                     res.status(result.status).json({
@@ -127,12 +115,8 @@ const patchAppointment = async (req, res, next) => {
                         data: result.data
                     });
                 }
-            } catch(err) {
-                next(err);
-            }
-            break;
-        case '4':
-            try {
+                break;
+            case '4':
                 result = await postgres.appointmentCarDeliver(req.body.id);
                 if (result) {
                     res.status(result.status).json({
@@ -140,12 +124,8 @@ const patchAppointment = async (req, res, next) => {
                         data: result.data
                     });
                 }
-            } catch(err) {
-                next(err);
-            }
-            break;
-        case '5':
-            try {
+                break;
+            case '5':
                 result = await postgres.appointmentComplete(req.body.id);
                 if (result) {
                     res.status(result.status).json({
@@ -153,18 +133,14 @@ const patchAppointment = async (req, res, next) => {
                         data: result.data
                     });
                 }
-            } catch(err) {
-                next(err);
-            }
-            break;
-        case '6':
-            if (user.rol !== "00") {
-                res.status(409).json({
-                    message: "Solo el usuario puede comentar como usuario.",
-                    data: null
-                });
-            } else {
-                try {
+                break;
+            case '6':
+                if (user.rol !== "00") {
+                    res.status(409).json({
+                        message: "Solo el usuario puede comentar como usuario.",
+                        data: null
+                    });
+                } else {
                     result = await postgres.appointmentCommentUser(req.body);
                     if (result) {
                         res.status(result.status).json({
@@ -172,19 +148,15 @@ const patchAppointment = async (req, res, next) => {
                             data: result.data
                         });
                     }
-                } catch(err) {
-                    next(err);
                 }
-            }
-            break;
-        case '7':
-            if (user.rol !== "10") {
-                res.status(409).json({
-                    message: "Solo el mech puede comentar como mech.",
-                    data: null
-                });
-            } else {
-                try {
+                break;
+            case '7':
+                if (user.rol !== "10") {
+                    res.status(409).json({
+                        message: "Solo el mech puede comentar como mech.",
+                        data: null
+                    });
+                } else {
                     result = await postgres.appointmentCommentMech(req.body);
                     if (result) {
                         res.status(result.status).json({
@@ -192,17 +164,17 @@ const patchAppointment = async (req, res, next) => {
                             data: result.data
                         });
                     }
-                } catch(err) {
-                    next(err);
                 }
-            }
-            break;
-        default:
-            res.status(409).json({
-                message: "Acción no especificada.",
-                data: null
-            });
-            break;
+                break;
+            default:
+                res.status(409).json({
+                    message: "Acción no especificada.",
+                    data: null
+                });
+                break;
+        }
+    } catch(err) {
+        next(err);
     }
 }
 
