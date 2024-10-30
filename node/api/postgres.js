@@ -30,7 +30,7 @@ function readWithId(table, id) {
     try {
         return new Promise((resolve) => {
             pool.query("SELECT * FROM $1 WHERE id = $2", [table, id], (error, result) => {
-                error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows});
+                error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows[0]});
             });
         });
     } catch (error) {
@@ -42,7 +42,7 @@ function userCreate(data) {
     try {
         return new Promise((resolve) => {
             pool.query("INSERT INTO users (usuario, celular, correo, clave, rol) VALUES ($1, $2, $3, $4, $5) RETURNING *", [data.usuario, data.celular, data.correo, data.clave, data.rol], (error, result) => {
-                error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 201, message: "Usuario creado exitosamente.", data: result.rowCount});
+                error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 201, message: "Usuario creado exitosamente.", data: result.rows[0]});
             });
         });
     } catch (error) {
@@ -54,7 +54,7 @@ function userRead(correo) {
     try {
         return new Promise((resolve) => {
             pool.query("SELECT * FROM users WHERE correo = $1", [correo], (error, result) => {
-                error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows});
+                error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows[0]});
             });
         });
     } catch (error) {

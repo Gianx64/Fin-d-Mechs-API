@@ -71,7 +71,7 @@ async function signIn(req, res, next) {
     }
 }
 
-//Register new user, returns user data
+//Register new user, returns user data, including token
 async function signUp(req, res, next) {
     //TODO: verificar celular
     const authData = {
@@ -88,9 +88,13 @@ async function signUp(req, res, next) {
         });
     } else {
         try {
-            const result = await postgres.userCreate(authData);
+            let result = await postgres.userCreate(authData);
+            delete result.data["usuario"];
+            delete result.data["celular"];
+            delete result.data["correo"];
             delete result.data["clave"];
             delete result.data["activo"];
+            result = { ...result, token: jwt.sign(result.data, config.jwt.secret, { expiresIn: "7d" })};
             if (result.status == 500) {
                 next(result);
             }
@@ -135,18 +139,18 @@ async function readUser(req, res, next) {
 
 //Decrypts authentication token, returns decripted user data
 function decodifyHeader(authorization) {
-    const authorization = authorization || '';
-    if(!authorization)
+    const bearer = authorization || '';
+    if(!bearer)
         return res.status(511).json({
             message: "Token inexistente.",
             data: null
         });
-    if(authorization.indexOf("Bearer") === -1)
+    if(bearer.indexOf("Bearer") === -1)
         return res.status(511).json({
             message: "Formato inválido.",
             data: null
         });
-    const token = authorization.split(' ')[1];
+    const token = bearer.split(' ')[1];
     return jwt.verify(token, config.jwt.secret);
 }
 
