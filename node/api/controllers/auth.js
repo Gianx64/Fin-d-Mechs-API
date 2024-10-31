@@ -86,12 +86,12 @@ async function signUp(req, res, next) {
                 if (userResult.status != 201) {
                     next(userResult);
                 } else {
+                    delete userResult.data["clave"];
+                    delete userResult.data["activo"];
                     userResult.data = { ...userResult.data, token: jwt.sign(userResult.data, config.jwt.secret, { expiresIn: "7d" })};
                     delete userResult.data["usuario"];
                     delete userResult.data["celular"];
                     delete userResult.data["correo"];
-                    delete userResult.data["clave"];
-                    delete userResult.data["activo"];
                     res.status(userResult.status).json({
                         message: userResult.message,
                         data: userResult.data
@@ -137,18 +137,13 @@ async function readUser(req, res, next) {
 //Decrypts authentication token, returns decripted user data
 function decodifyHeader(authorization) {
     const bearer = authorization || '';
-    if(!bearer)
-        return res.status(511).json({
-            message: "Token inexistente.",
-            data: null
-        });
-    if(bearer.indexOf("Bearer") === -1)
-        return res.status(511).json({
-            message: "Formato inválido.",
-            data: null
-        });
-    const token = bearer.split(' ')[1];
-    return jwt.verify(token, config.jwt.secret);
+    if(!bearer) {
+        throw new Error("Token inexistente.");
+    } else if(bearer.indexOf("Bearer") === -1) {
+        throw new Error("Formato inválido.");
+    } else {
+        return jwt.verify(bearer.split(' ')[1], config.jwt.secret);
+    }
 }
 
-export default { checkAuth, getUserFromToken, signIn, signUp, readUser }
+export default { checkAuth, getUserFromToken, signIn, signUp, readUser, decodifyHeader }
