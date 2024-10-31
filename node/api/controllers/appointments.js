@@ -32,7 +32,7 @@ const postAppointment = async (req, res, next) => {
         if (result) {
             res.status(result.status).json({
                 message: result.message,
-                data: result.data
+                data: result.data[0]
             });
         }
     } catch(err) {

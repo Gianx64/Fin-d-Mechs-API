@@ -42,4 +42,5 @@ CREATE TABLE IF NOT EXISTS appointments(
     mech_comentario VARCHAR(128),
     mech_comentario_tiempo TIMESTAMP
 );
+COMMENT ON COLUMN appointments.servicio IS '11=Otro, 10=Mecánico lleva a taller, 01=Cliente lleva a taller, 00=Servicio a domicilio';
 COMMENT ON COLUMN appointments.canceladopor IS 'false=user, true=mech';

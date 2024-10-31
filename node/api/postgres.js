@@ -97,7 +97,7 @@ function appointmentCreate(data) {
 function appointmentsReadUser(id) {
     try {
         return new Promise((resolve) => {
-            pool.query("SELECT * FROM appointments WHERE usuario = $1", [id], (error, result) => {
+            pool.query("SELECT id, usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller, ingresado, actualizado, confirmado, cancelado, canceladopor, auto_tomado, auto_devuelto, completado, usuario_comentario, usuario_comentario_tiempo, mech_comentario, mech_comentario_tiempo, mech.usuario as mech_usuario, mech.celular as mech_celular, mech.correo as mech_correo FROM appointments WHERE usuario = $1 LEFT JOIN users AS mech ON appointments.mech = users.id", [id], (error, result) => {
                 error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows});
             });
         });
@@ -109,7 +109,7 @@ function appointmentsReadUser(id) {
 function appointmentsReadMech(id) {
     try {
         return new Promise((resolve) => {
-            pool.query("SELECT * FROM appointments WHERE mech = $1", [id], (error, result) => {
+            pool.query("SELECT id, usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller, ingresado, actualizado, confirmado, cancelado, canceladopor, auto_tomado, auto_devuelto, completado, usuario_comentario, usuario_comentario_tiempo, mech_comentario, mech_comentario_tiempo, user.usuario as user_usuario, user.celular as user_celular, user.correo as user_correo FROM appointments WHERE mech = $1 LEFT JOIN users AS user ON appointments.user = users.id", [id], (error, result) => {
                 error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows});
             });
         });
@@ -121,7 +121,7 @@ function appointmentsReadMech(id) {
 function appointmentUpdate(data) {
     try {
         return new Promise((resolve) => {
-            pool.query("UPDATE appointments SET (usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller, actualizado) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW()) WHERE id = $11", [data.usuario, data.fecha, data.ciudad, data.direccion, data.auto_marca, data.auto_modelo, data.detalles, data.mech, data.servicio, data.id_taller, data.id], (error, result) => {
+            pool.query("UPDATE appointments SET (fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller, actualizado) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) WHERE id = $10", [data.fecha, data.ciudad, data.direccion, data.auto_marca, data.auto_modelo, data.detalles, data.mech, data.servicio, data.id_taller, data.id], (error, result) => {
                 error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Cita actualizada exitosamente.", data: result.rowCount});
             });
         });
