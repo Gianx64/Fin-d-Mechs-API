@@ -35,12 +35,7 @@ async function signIn(req, res, next) {
         let userResult = await postgres.userRead(req.body.correo);
         if (userResult.status != 200) {
             next(userResult);
-        } else if (userResult.data == []) {
-            res.status(404).json({
-                message: "Usuario no encontrado.",
-                data: null
-            });
-        } else {
+        } else if (userResult.data[0]) {
             const token = await compare(req.body.clave, userResult.data[0].clave).then(fulfilled => {
                 if(fulfilled === true) {
                     delete userResult.data[0]["clave"];
@@ -51,7 +46,7 @@ async function signIn(req, res, next) {
             if (token) {
                 res.status(userResult.status).json({
                     message: "Token creado exitosamente.",
-                    data: { ...userResult, token: token }
+                    data: { ...userResult.data[0], token: token }
                 });
             } else {
                 res.status(401).json({
@@ -59,6 +54,11 @@ async function signIn(req, res, next) {
                     data: null
                 });
             }
+        } else {
+            res.status(404).json({
+                message: "Usuario no encontrado.",
+                data: null
+            });
         }
     } catch(err) {
         next(err);
