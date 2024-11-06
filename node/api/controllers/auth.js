@@ -103,32 +103,17 @@ async function signUp(req, res, next) {
     }
 }
 
-//Returns user data if token matches database user data
-async function readUser(req, res, next) {
+//Returns mechs data list
+async function readFormData(req, res, next) {
     try {
-        const decodified = decodifyHeader(req.headers.authorization);
-        if (decodified.correo !== req.params.correo) {
-            res.status(403).json({
-                message: "Acceso denegado.",
-                data: null
-            });
-        } else {
-            const userResult = await postgres.userRead(req.params.correo);
-            if (userResult.status != 200) {
-                next(userResult);
-            }
-            if (userResult.data.length == 1) {
-                res.status(userResult.status).json({
-                    message: userResult.message,
-                    data: userResult.data[0]
-                });
-            } else {
-                res.status(409).json({
-                    message: "Error.",
-                    data: null
-                });
-            }
+        const result = await postgres.readMechs();
+        if (result.status != 200) {
+            next(result);
         }
+        res.status(result.status).json({
+            message: result.message,
+            data: result.data
+        });
     } catch(err) {
         next(err);
     }
@@ -146,4 +131,4 @@ function decodifyHeader(authorization) {
     }
 }
 
-export default { checkAuth, getUserFromToken, signIn, signUp, readUser, decodifyHeader }
+export default { checkAuth, getUserFromToken, signIn, signUp, readFormData, decodifyHeader }

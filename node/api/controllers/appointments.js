@@ -5,10 +5,18 @@ const getAppointments = async (req, res, next) => {
     try {
         const user = authController.decodifyHeader(req.headers.authorization);
         let result = null;
-        if (user.rol == "00") {
-            result = await postgres.appointmentsReadUser(user.id);
-        } else if (user.rol == "10") {
-            result = await postgres.appointmentsReadMech(user.id);
+        switch (user.rol) {
+            case "10":
+                result = await postgres.appointmentsReadMech(user.id);
+                break;
+            case "01":
+                result = {status: 409, message: "Mecánico no autorizado.", data: null};
+                break;
+            case "11":
+            case "00":
+            default:
+                result = await postgres.appointmentsReadUser(user.id);
+                break;
         }
         if (result) {
             res.status(result.status).json({

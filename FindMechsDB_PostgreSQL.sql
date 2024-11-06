@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS appointments(
     auto_marca VARCHAR(16) NOT NULL,
     auto_modelo VARCHAR(32) NOT NULL,
     detalles VARCHAR(128),
-    mech SMALLINT NOT NULL REFERENCES users(id),
+    mech SMALLINT REFERENCES users(id),
     servicio BIT(2) NOT NULL,
     id_taller SMALLINT REFERENCES workshops(id),
     ingresado TIMESTAMP DEFAULT NOW(),
