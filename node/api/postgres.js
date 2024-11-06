@@ -37,7 +37,7 @@ function readWithId(table, id) {
 function readMechs() {
     try {
         return new Promise((resolve) => {
-            pool.query("SELECT id, usuario, correo FROM users WHERE role = '10'", (error, result) => {
+            pool.query("SELECT id, usuario, correo FROM users WHERE rol = '10'", (error, result) => {
                 error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows});
             });
         });

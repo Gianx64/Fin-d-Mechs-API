@@ -109,11 +109,12 @@ async function readFormData(req, res, next) {
         const result = await postgres.readMechs();
         if (result.status != 200) {
             next(result);
+        } else {
+            res.status(result.status).json({
+                message: result.message,
+                data: result.data
+            });
         }
-        res.status(result.status).json({
-            message: result.message,
-            data: result.data
-        });
     } catch(err) {
         next(err);
     }
