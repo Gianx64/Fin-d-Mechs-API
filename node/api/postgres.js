@@ -37,7 +37,7 @@ function readWithId(table, id) {
 function readMechs() {
     try {
         return new Promise((resolve) => {
-            pool.query("SELECT (id, usuario, correo) FROM users WHERE role = '10'", (error, result) => {
+            pool.query("SELECT id, usuario, correo FROM users WHERE role = '10'", (error, result) => {
                 error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows});
             });
         });
@@ -109,7 +109,7 @@ function appointmentCreate(data) {
 function appointmentsReadUser(id) {
     try {
         return new Promise((resolve) => {
-            pool.query("SELECT (appointments.id, appointments.usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller, ingresado, actualizado, confirmado, cancelado, canceladopor, auto_tomado, auto_devuelto, completado, usuario_comentario, usuario_comentario_tiempo, mech_comentario, mech_comentario_tiempo, users.usuario as mech_usuario, users.celular as mech_celular, users.correo as mech_correo) FROM appointments LEFT JOIN users ON appointments.mech = users.id WHERE appointments.usuario = $1", [id], (error, result) => {
+            pool.query("SELECT appointments.id, appointments.usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller, ingresado, actualizado, confirmado, cancelado, canceladopor, auto_tomado, auto_devuelto, completado, usuario_comentario, usuario_comentario_tiempo, mech_comentario, mech_comentario_tiempo, users.usuario as mech_usuario, users.celular as mech_celular, users.correo as mech_correo FROM appointments LEFT JOIN users ON appointments.mech = users.id WHERE appointments.usuario = $1", [id], (error, result) => {
                 error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows});
             });
         });
@@ -121,7 +121,7 @@ function appointmentsReadUser(id) {
 function appointmentsReadMech(id) {
     try {
         return new Promise((resolve) => {
-            pool.query("SELECT (appointments.id, appointments.usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller, ingresado, actualizado, confirmado, cancelado, canceladopor, auto_tomado, auto_devuelto, completado, usuario_comentario, usuario_comentario_tiempo, mech_comentario, mech_comentario_tiempo, users.usuario as user_usuario, users.celular as user_celular, users.correo as user_correo) FROM appointments LEFT JOIN users ON appointments.user = users.id WHERE appointments.mech = $1 OR appointments.mech = NULL", [id], (error, result) => {
+            pool.query("SELECT appointments.id, appointments.usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, mech, servicio, id_taller, ingresado, actualizado, confirmado, cancelado, canceladopor, auto_tomado, auto_devuelto, completado, usuario_comentario, usuario_comentario_tiempo, mech_comentario, mech_comentario_tiempo, users.usuario as user_usuario, users.celular as user_celular, users.correo as user_correo FROM appointments LEFT JOIN users ON appointments.user = users.id WHERE appointments.mech = $1 OR appointments.mech = NULL", [id], (error, result) => {
                 error ? resolve({ status: 409, message: `Error ${error.code}: ${error.detail}`, data: null}) : resolve({ status: 200, message: "Lectura exitosa.", data: result.rows});
             });
         });
