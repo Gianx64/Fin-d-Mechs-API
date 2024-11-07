@@ -64,11 +64,12 @@ const getAppointment = async (req, res, next) => {
 
 const patchAppointment = async (req, res, next) => {
     try {
-        const user = authController.decodifyHeader(req);
+        const user = authController.decodifyHeader(req.headers.authorization);
+        const appointment = await postgres.readWithId("appointments", req.params.appointmentId).data;
         let result;
         switch (req.params.action) {
             case '0':
-                if (req.body.confirmado || req.body.cancelado) {
+                if (appointment.confirmado || appointment.cancelado) {
                     res.status(409).json({
                         message: "La cita ya no se puede modificar.",
                         data: null
@@ -84,7 +85,7 @@ const patchAppointment = async (req, res, next) => {
                 }
                 break;
             case '1':
-                if (req.body.confirmado || req.body.cancelado) {
+                if (appointment.confirmado || appointment.cancelado) {
                     res.status(409).json({
                         message: "La cita ya no se puede modificar.",
                         data: null
