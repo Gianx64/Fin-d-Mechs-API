@@ -21,8 +21,7 @@ app.use((req, res, next) => {
     if (req.method === "OPTIONS") {
         res.header("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE");
         return res.status(200).json({
-            message: "Options in header.",
-            data: null
+            message: "Options in header."
         });
     }
     next();
@@ -32,16 +31,14 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
     const err = {
         status: 404,
-        message: "Not found",
-        data: null
+        message: "Not found"
     };
     next(err);
 });
 
 app.use((err, req, res, next) => {
     res.status(err.status || 500).json({
-        message: err.message,
-        data: err.data || null
+        message: err.message
     });
 });
 
