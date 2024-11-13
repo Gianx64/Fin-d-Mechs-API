@@ -1,8 +1,13 @@
 import pg from "pg";
-import config from "../../config.js";
 
 const { Pool } = pg;
-const pool = new Pool(config.pg);
+const pool = new Pool({
+  user: process.env.POSTGRES_USER,
+  database: process.env.POSTGRES_DB,
+  password: process.env.POSTGRES_PASSWORD,
+  port: process.env.POSTGRES_PORT,
+  host: process.env.POSTGRES_HOST
+});
 pool.on('error', (err, client) => {
   console.error('Unexpected error on idle client', err);
   console.log("[DB err]:", err.code, err.message);

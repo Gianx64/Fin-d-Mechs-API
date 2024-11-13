@@ -1,6 +1,5 @@
 import { hash, compare } from "bcrypt"
 import jwt from "jsonwebtoken"
-import config from "../../config.js"
 import postgres from "../postgres/users.js"
 
 //Middleware to check if authorization token is valid
@@ -40,7 +39,7 @@ async function signIn(req, res, next) {
                         delete result.data[0]["clave"];
                         delete result.data[0]["verificado"];
                         delete result.data[0]["activo"];
-                        return jwt.sign(result.data[0], config.jwt.secret, {expiresIn: "1d"});
+                        return jwt.sign(result.data[0], process.env.jwtsecret, {expiresIn: "1d"});
                     } else return null;
                 });
                 if (token)
@@ -88,7 +87,7 @@ async function signUp(req, res, next) {
                     delete result.data["clave"];
                     delete result.data["verificado"];
                     delete result.data["activo"];
-                    result.data = { ...result.data, token: jwt.sign(result.data, config.jwt.secret, {expiresIn: "1d"})};
+                    result.data = { ...result.data, token: jwt.sign(result.data, process.env.jwtsecret, {expiresIn: "1d"})};
                     delete result.data["nombre"];
                     delete result.data["celular"];
                     delete result.data["correo"];
@@ -122,7 +121,7 @@ function decodifyHeader(authorization) {
     } else if(bearer.indexOf("Bearer") === -1) {
         throw new Error("Formato inválido.");
     } else {
-        return jwt.verify(bearer.split(' ')[1], config.jwt.secret);
+        return jwt.verify(bearer.split(' ')[1], process.env.jwtsecret);
     }
 }
 

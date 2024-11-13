@@ -1,5 +1,7 @@
 node_modules
+package-lock.json
 docker-compose.yml
-Dockerfile
 fin-d-mechs-nginx.config
+fin-d-mechs-node.Dockerfile
+fin-d-mechs-postgres.Dockerfile
 FindMechsDB_PostgreSQL.sql
