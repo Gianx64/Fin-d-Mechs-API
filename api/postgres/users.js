@@ -1,4 +1,4 @@
-import pool from "../postgres.js";
+import pool from "./pool.js";
 
 const queries = {
 readMechs:        "SELECT id, nombre, correo FROM users WHERE rol = '10'",

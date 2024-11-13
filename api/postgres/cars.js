@@ -1,4 +1,4 @@
-import pool from "../postgres.js";
+import pool from "./pool.js";
 
 const queries = {
 carsRead:       "SELECT * FROM cars WHERE id_usuario = $1",

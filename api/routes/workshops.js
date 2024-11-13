@@ -6,7 +6,6 @@ const router = Router();
 
 router.get('/', authController.checkAuth, workshopController.getWorkshops);
 router.post('/', authController.checkAuth, workshopController.postWorkshop);
-router.get("/:workshopId", authController.checkAuth, workshopController.getWorkshop);
 router.patch("/:workshopId", authController.checkAuth, workshopController.patchWorkshop);
 
 export default router;

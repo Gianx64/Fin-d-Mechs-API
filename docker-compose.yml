@@ -1,11 +1,17 @@
+version: '3'
 services:
   postgres:
     image: "postgres:latest"
-    restart: always
+    restart: unless-stopped
+    command: bash -c "sed -i -e 's/# es_ES.UTF-8 UTF-8/es_ES.UTF-8 UTF-8/' /etc/locale.gen && locale-gen"
     environment:
-      POSTGRES_USER: 'gian'
-      POSTGRES_PASSWORD: 'pass'  #TODO: Change in node/config.js.example
-      POSTGRES_DB: 'FindMechsDB'
+      POSTGRES_USER: "gian"
+      POSTGRES_PASSWORD: "pass"  #TODO: Change in node/config.js.example
+      POSTGRES_DB: "FindMechsDB"
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=es-ES"
+      LANG: "es_ES.UTF-8"
+      LANGUAGE: "es_ES:es"
+      LC_ALL: "es_ES.utf8"
     volumes:
       - ./FindMechsDB_PostgreSQL.sql:/docker-entrypoint-initdb.d/FindMechsDB_PostgreSQL.sql:ro
       - FindMechsDB:/var/lib/postgresql
@@ -13,7 +19,7 @@ services:
       - 5432:5432
   node:
     restart: on-failure
-    build: ./
+    build: .
     ports:
       - 81:3000
 
