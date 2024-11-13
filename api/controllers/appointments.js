@@ -1,4 +1,5 @@
-import postgres from "../postgres.js";
+import postgres from "../postgres/appointments.js";
+import readWithId from "../postgres/pool.js"
 import authController from "./auth.js";
 
 const getAppointments = async (req, res, next) => {
@@ -46,22 +47,10 @@ const postAppointment = async (req, res, next) => {
     }
 }
 
-const getAppointment = async (req, res, next) => {
-    try {
-        const result = await postgres.readWithId("appointments", req.params.appointmentId);
-        if (result.error)
-            throw new Error(`Error ${result.error}.`);
-        else if (result.data)
-            res.status(200).json(result.data);
-    } catch(err) {
-        next(err);
-    }
-}
-
 const patchAppointment = async (req, res, next) => {
     try {
         const user = authController.decodifyHeader(req.headers.authorization);
-        const appointment = await postgres.readWithId("appointments", req.params.appointmentId).data;
+        const appointment = await readWithId("appointments", req.params.appointmentId).data;
         let result;
 		if (user.id === appointment.id_usuario || user.id === appointment.id_mech)
 			switch (req.params.action) {
@@ -114,4 +103,4 @@ const patchAppointment = async (req, res, next) => {
     }
 }
 
-export default {getAppointments, postAppointment, getAppointment, patchAppointment}
+export default {getAppointments, postAppointment, patchAppointment}

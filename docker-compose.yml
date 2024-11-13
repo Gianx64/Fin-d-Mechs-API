@@ -7,21 +7,15 @@ services:
       POSTGRES_PASSWORD: 'pass'  #TODO: Change in node/config.js.example
       POSTGRES_DB: 'FindMechsDB'
     volumes:
-      - ./FindMechsDB_PostgreSQL.sql:/docker-entrypoint-initdb.d/FindMechsDB_PostgreSQL.sql
+      - ./FindMechsDB_PostgreSQL.sql:/docker-entrypoint-initdb.d/FindMechsDB_PostgreSQL.sql:ro
       - FindMechsDB:/var/lib/postgresql
     ports:
       - 5432:5432
   node:
     restart: on-failure
-    build: ./node
+    build: ./
     ports:
       - 81:3000
-  nginx:
-    build: ./nginx
-    ports:
-      - '80:80'
-    depends_on:
-      - node
 
 volumes:
   FindMechsDB:

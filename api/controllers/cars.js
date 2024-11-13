@@ -1,11 +1,5 @@
-import postgres from "../postgres.js";
+import postgres from "../postgres/cars.js";
 import authController from "./auth.js";
-
-const queries = {
-	carCreate: "INSERT INTO cars (id_usuario, patente, vin, marca, modelo) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-	carUpdate: "UPDATE cars SET (patente, vin, marca, modelo) = ($1, $2, $3, $4) WHERE id = $5",
-	carDeactivate: "UPDATE cars SET (activo) = (FALSE) WHERE id = $1"
-}
 
 const getCars = async (req, res, next) => {
     try {
@@ -51,29 +45,13 @@ const postCar = async (req, res, next) => {
     }
 }
 
-const getCar = async (req, res, next) => {
-    try {
-        const result = await postgres.readWithId("cars", req.params.carId);
-        if (result.error)
-            throw new Error(`Error ${result.error}.`);
-        else if (result.data)
-            res.status(200).json(result.data);
-    } catch(err) {
-        next(err);
-    }
-}
-
 const patchCar = async (req, res, next) => {
     try {
-        const car = await postgres.readWithId("cars", req.params.carId).data;
-		let result;
-		if (!car.cita) {
-        	result = await postgres.carUpdate(req.body);
-			if (result.error)
-				throw new Error(`Error ${result.error}.`);
-			else if (result.data)
-				res.status(200).json(result.data);
-		}
+        result = await postgres.carUpdate(req.body);
+		if (result.error)
+			throw new Error(`Error ${result.error}.`);
+		else if (result.data === 1)
+			res.status(200).json(result.data);
         else
             throw new Error("Este auto tiene una cita pendiente.");
     } catch(err) {
@@ -83,15 +61,11 @@ const patchCar = async (req, res, next) => {
 
 const deactivateCar = async (req, res, next) => {
     try {
-        const car = await postgres.readWithId("cars", req.params.carId).data;
-		let result;
-		if (!car.cita) {
-        	result = await postgres.carDeactivate(req.params.carId);
-			if (result.error)
-				throw new Error(`Error ${result.error}.`);
-			else if (result.data)
-				res.status(200).json(result.data);
-		}
+        result = await postgres.carDeactivate(req.params.carId);
+		if (result.error)
+			throw new Error(`Error ${result.error}.`);
+		else if (result.data === 1)
+			res.status(200).json(result.data);
         else
             throw new Error("Este auto tiene una cita pendiente.");
     } catch(err) {
@@ -99,4 +73,4 @@ const deactivateCar = async (req, res, next) => {
     }
 }
 
-export default {getCars, postCar, getCar, patchCar, deactivateCar}
+export default {getCars, postCar, patchCar, deactivateCar}

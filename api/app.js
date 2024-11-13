@@ -2,6 +2,8 @@ import express from "express";
 import bodyParser from "body-parser";
 import appointmentRoutes from "./routes/appointments.js";
 import authRoutes from "./routes/auth.js";
+import carRoutes from "./routes/cars.js";
+import workshopRoutes from "./routes/workshops.js";
 
 //App initiation and configuration
 const app = express();
@@ -12,6 +14,8 @@ app.use(express.urlencoded({extended: true}));
 
 //Route groups
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/cars", carRoutes);
+app.use("/api/workshops", workshopRoutes);
 app.use("/api/auth", authRoutes);
 
 //OPTIONS route

@@ -1,0 +1,5 @@
+node_modules
+docker-compose.yml
+Dockerfile
+fin-d-mechs-nginx.config
+FindMechsDB_PostgreSQL.sql

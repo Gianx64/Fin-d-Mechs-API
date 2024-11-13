@@ -1,16 +1,26 @@
 CREATE TABLE IF NOT EXISTS users(
     id SMALLSERIAL PRIMARY KEY,
-    usuario VARCHAR(64) NOT NULL,
+    nombre VARCHAR(64) NOT NULL,
     celular VARCHAR(16) NOT NULL,
-    correo VARCHAR(64) UNIQUE NOT NULL,
+    correo VARCHAR(64) NOT NULL,
     clave VARCHAR(64) NOT NULL,
     rol BIT(2) NOT NULL DEFAULT b'00',
+    verificado TIMESTAMP,
     activo BOOLEAN NOT NULL DEFAULT TRUE
 );
 COMMENT ON COLUMN users.rol IS '11=admin, 10=mech_verified, 01=mech_unverified, 00=user';
+CREATE TABLE IF NOT EXISTS cars(
+    id SMALLSERIAL PRIMARY KEY,
+    id_usuario SMALLINT NOT NULL REFERENCES users(id),
+    patente VARCHAR(10) UNIQUE NOT NULL,
+    vin VARCHAR(17) UNIQUE NOT NULL,
+    marca VARCHAR(16) NOT NULL,
+    modelo VARCHAR(32) NOT NULL,
+    cita BOOLEAN NOT NULL DEFAULT FALSE
+);
 CREATE TABLE IF NOT EXISTS workshops(
     id SMALLSERIAL PRIMARY KEY,
-    usuario SMALLINT NOT NULL REFERENCES users(id),
+    id_usuario SMALLINT NOT NULL REFERENCES users(id),
     ciudad VARCHAR(64) NOT NULL,
     direccion VARCHAR(64) NOT NULL,
     detalles VARCHAR(128),
@@ -19,14 +29,13 @@ CREATE TABLE IF NOT EXISTS workshops(
 );
 CREATE TABLE IF NOT EXISTS appointments(
     id SERIAL PRIMARY KEY,
-    usuario SMALLINT NOT NULL REFERENCES users(id),
+    id_usuario SMALLINT NOT NULL REFERENCES users(id),
     fecha TIMESTAMP NOT NULL,
-    ciudad VARCHAR(64) NOT NULL,
+    ciudad VARCHAR(32) NOT NULL,
     direccion VARCHAR(64) NOT NULL,
-    auto_marca VARCHAR(16) NOT NULL,
-    auto_modelo VARCHAR(32) NOT NULL,
+    id_auto SMALLINT NOT NULL REFERENCES cars(id),
     detalles VARCHAR(128),
-    mech SMALLINT REFERENCES users(id),
+    id_mech SMALLINT REFERENCES users(id),
     servicio BIT(2) NOT NULL,
     id_taller SMALLINT REFERENCES workshops(id),
     ingresado TIMESTAMP DEFAULT NOW(),

@@ -1,14 +1,6 @@
-import postgres from "../postgres.js";
+import postgres from "../postgres/workshops.js";
+import postgresAppointments from "../postgres/appointments.js";
 import authController from "./auth.js";
-
-const queries = {
-	workshopsReadMech: "SELECT * FROM workshops WHERE id_usuario = $1",
-	workshopCreate: "INSERT INTO workshops (id_usuario, ciudad, direccion, detalles) VALUES ($1, $2, $3, $4) RETURNING *",
-	workshopUpdate: "UPDATE workshops SET (ciudad, direccion, detalles) = ($1, $2, $3) WHERE id = $4",
-	workshopDeactivate: "UPDATE workshops SET (activo) = (FALSE) WHERE id = $1",
-	appointmentsReadWorkshop: "SELECT * FROM appointments WHERE id_taller = $1",
-	appointmentsActiveReadWorkshop: "SELECT * FROM appointments WHERE id_taller = $1 AND cancelado = NULL AND completado = NULL"
-}
 
 const getWorkshops = async (req, res, next) => {
     try {
@@ -55,21 +47,9 @@ const postWorkshop = async (req, res, next) => {
     }
 }
 
-const getWorkshop = async (req, res, next) => {
-    try {
-        const result = await postgres.readWithId("workshops", req.params.workshopId);
-        if (result.error)
-            throw new Error(`Error ${result.error}.`);
-        else if (result.data)
-            res.status(200).json(result.data);
-    } catch(err) {
-        next(err);
-    }
-}
-
 const patchWorkshop = async (req, res, next) => {
     try {
-        const appointments = await postgres.appointmentsReadWorkshop(req.params.workshopId).data;
+        const appointments = await postgresAppointments.appointmentsReadWorkshop(req.params.workshopId).data;
 		let result;
 		if (appointments.length === 0) {
         	result = await postgres.workshopUpdate(req.body);
@@ -87,7 +67,7 @@ const patchWorkshop = async (req, res, next) => {
 
 const deactivateWorkshop = async (req, res, next) => {
     try {
-        const appointments = await postgres.appointmentsActiveReadWorkshop(req.params.workshopId).data;
+        const appointments = await postgresAppointments.appointmentsActiveReadWorkshop(req.params.workshopId).data;
 		let result;
 		if (appointments.length === 0) {
         	result = await postgres.workshopDeactivate(req.body);
@@ -103,4 +83,4 @@ const deactivateWorkshop = async (req, res, next) => {
     }
 }
 
-export default {getWorkshops, postWorkshop, getWorkshop, patchWorkshop, deactivateWorkshop}
+export default {getWorkshops, postWorkshop, patchWorkshop, deactivateWorkshop}
