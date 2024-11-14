@@ -1,5 +1,4 @@
 node_modules
-package-lock.json
 docker-compose.yml
 fin-d-mechs-nginx.config
 fin-d-mechs-node.Dockerfile

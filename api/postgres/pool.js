@@ -1,6 +1,6 @@
-import { Pool } from "pg";
+import pg from "pg";
 
-export const pool = new Pool({
+export const pool = new pg.Pool({
   user: process.env.POSTGRES_USER,
   database: process.env.POSTGRES_DB,
   password: process.env.POSTGRES_PASSWORD,

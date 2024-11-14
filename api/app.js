@@ -12,6 +12,12 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
+//Request logger
+app.use((req, res, next) => {
+  console.log(req.headers["x-real-ip"], req.method, req.url);
+  next();
+});
+
 //Route groups
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/cars", carRoutes);
