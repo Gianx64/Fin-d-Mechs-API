@@ -1,4 +1,4 @@
-import pool from "./pool.js";
+import { pool } from "./pool.js";
 
 const queries = {
 readMechs:        "SELECT id, nombre, correo FROM users WHERE rol = '10'",

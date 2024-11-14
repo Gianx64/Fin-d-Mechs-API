@@ -1,4 +1,4 @@
-import pool from "./pool.js";
+import { pool } from "./pool.js";
 
 const queries = {
 appointmentCreate:      `INSERT INTO appointments (id_usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, id_mech, servicio, id_taller)
@@ -214,18 +214,18 @@ function appointmentCommentMech(comment, id) {
 };
 
 export default {
-    appointmentCreate,
-    appointmentsReadUser,
-    appointmentsReadMech,
-    appointmentsReadWorkshop,
-    appointmentsActiveReadWorkshop,
-    appointmentUpdate,
-    appointmentCancel,
-    appointmentConfirm,
-    appointmentMechTake,
-    appointmentCarTake,
-    appointmentCarDeliver,
-    appointmentComplete,
-    appointmentCommentUser,
-    appointmentCommentMech
+  appointmentCreate,
+  appointmentsReadUser,
+  appointmentsReadMech,
+  appointmentsReadWorkshop,
+  appointmentsActiveReadWorkshop,
+  appointmentUpdate,
+  appointmentCancel,
+  appointmentConfirm,
+  appointmentMechTake,
+  appointmentCarTake,
+  appointmentCarDeliver,
+  appointmentComplete,
+  appointmentCommentUser,
+  appointmentCommentMech
 }

@@ -1,4 +1,4 @@
-import pool from "./pool.js";
+import { pool } from "./pool.js";
 
 const queries = {
 workshopsReadMech:  "SELECT * FROM workshops WHERE id_usuario = $1",
