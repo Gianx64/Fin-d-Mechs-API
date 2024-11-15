@@ -1,5 +1,5 @@
-import postgres from "../postgres/workshops.js";
-import postgresAppointments from "../postgres/appointments.js";
+import pgWorkshops from "../postgres/workshops.js";
+import pgAppointments from "../postgres/appointments.js";
 import authController from "./auth.js";
 
 const getWorkshops = async (req, res, next) => {
@@ -8,7 +8,7 @@ const getWorkshops = async (req, res, next) => {
 		let result = null;
 		switch (user.rol) {
 			case "10":
-				result = await postgres.workshopsReadMech(user.id);
+				result = await pgWorkshops.workshopsReadMech(user.id);
 				break;
 			case "01":
 				result = {error: "Mecánico no autorizado."};
@@ -37,7 +37,7 @@ const getWorkshops = async (req, res, next) => {
 
 const postWorkshop = async (req, res, next) => {
 	try {
-		const result = await postgres.workshopCreate(req.body);
+		const result = await pgWorkshops.workshopCreate(req.body);
 		if (result.error)
 			throw new Error(`Error ${result.error}.`);
 		else if (result.data)
@@ -49,10 +49,10 @@ const postWorkshop = async (req, res, next) => {
 
 const patchWorkshop = async (req, res, next) => {
 	try {
-		const appointments = await postgresAppointments.appointmentsReadWorkshop(req.params.workshopId).data;
+		const appointments = await pgAppointments.appointmentsReadWorkshop(req.params.workshopId).data;
 		let result;
 		if (appointments.length === 0) {
-			result = await postgres.workshopUpdate(req.body);
+			result = await pgWorkshops.workshopUpdate(req.body);
 			if (result.error)
 				throw new Error(`Error ${result.error}.`);
 			else if (result.data)
@@ -67,10 +67,10 @@ const patchWorkshop = async (req, res, next) => {
 
 const deactivateWorkshop = async (req, res, next) => {
 	try {
-		const appointments = await postgresAppointments.appointmentsActiveReadWorkshop(req.params.workshopId).data;
+		const appointments = await pgAppointments.appointmentsActiveReadWorkshop(req.params.workshopId).data;
 		let result;
 		if (appointments.length === 0) {
-			result = await postgres.workshopDeactivate(req.body);
+			result = await pgWorkshops.workshopDeactivate(req.body);
 			if (result.error)
 				throw new Error(`Error ${result.error}.`);
 			else if (result.data)

@@ -1,6 +1,6 @@
 import { hash, compare } from "bcrypt"
 import jwt from "jsonwebtoken"
-import postgres from "../postgres/users.js"
+import pgUsers from "../postgres/users.js"
 
 //Middleware to check if authorization token is valid
 function checkAuth(req, res, next) {
@@ -30,7 +30,7 @@ async function signIn(req, res, next) {
 				message: "Correo inválido."
 			});
 		} else {
-			let result = await postgres.userRead(req.body.correo);
+			let result = await pgUsers.userRead(req.body.correo);
 			if (result.error)
 				throw new Error(`Error ${result.error}.`);
 			else if (result.data.length === 1) {
@@ -77,7 +77,7 @@ async function signUp(req, res, next) {
 				message: "Correo inválido."
 			});
 		} else {
-				let result = await postgres.userCreate(authData);
+				let result = await pgUsers.userCreate(authData);
 				if (result.error) {
 					if (typeof result.error === "number")
 						throw new Error(`Error ${result.error}.`);
@@ -93,20 +93,6 @@ async function signUp(req, res, next) {
 					delete result.data["correo"];
 					res.status(201).json(result.data);
 				}
-		}
-	} catch(err) {
-		next(err);
-	}
-}
-
-//Returns mechs data list
-async function readFormData(req, res, next) {
-	try {
-		const result = await postgres.readMechs();
-		if (result.error) {
-			throw new Error(`Error ${result.error}.`);
-		} else {
-			res.status(200).json(result);
 		}
 	} catch(err) {
 		next(err);
@@ -130,6 +116,5 @@ export default {
 	getUserFromToken,
 	signIn,
 	signUp,
-	readFormData,
 	decodifyHeader
 }

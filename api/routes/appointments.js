@@ -6,6 +6,7 @@ const router = Router();
 
 router.get('/', authController.checkAuth, appointmentController.getAppointments);
 router.post('/', authController.checkAuth, appointmentController.postAppointment);
+router.get("/formdata", authController.checkAuth, appointmentController.readFormData);
 router.patch("/:appointmentId/:action", authController.checkAuth, appointmentController.patchAppointment);
 
 export default router;

@@ -24,8 +24,12 @@ CREATE TABLE IF NOT EXISTS workshops(
     ciudad VARCHAR(64) NOT NULL,
     direccion VARCHAR(64) NOT NULL,
     detalles VARCHAR(128),
-    mechs VARCHAR(64),
     activo BOOLEAN NOT NULL DEFAULT TRUE
+);
+CREATE TABLE IF NOT EXISTS workshopmechs(
+    id SMALLSERIAL PRIMARY KEY,
+    id_mech SMALLINT NOT NULL REFERENCES users(id),
+    id_workshop SMALLINT NOT NULL REFERENCES workshops(id),
 );
 CREATE TABLE IF NOT EXISTS appointments(
     id SERIAL PRIMARY KEY,

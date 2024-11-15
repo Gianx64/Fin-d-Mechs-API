@@ -1,6 +1,30 @@
-import postgres from "../postgres/appointments.js";
+import pgAppointments from "../postgres/appointments.js";
+import pgCars from "../postgres/cars.js";
+import pgWorkshops from "../postgres/workshops.js";
+import pgUsers from "../postgres/users.js";
 import readWithId from "../postgres/pool.js"
 import authController from "./auth.js";
+
+//Returns mechs data list
+async function readFormData(req, res, next) {
+	try {
+    const user = authController.decodifyHeader(req.headers.authorization);
+    const cars = await pgCars.carsRead(user.id);
+		const mechs = await pgUsers.readMechs();
+    const workshops = await pgWorkshops.workshopsRead();
+		if (result.error) {
+			throw new Error(`Error ${result.error}.`);
+		} else {
+			res.status(200).json({
+        cars: cars,
+        mechs: mechs,
+        workshops: workshops
+      });
+		}
+	} catch(err) {
+		next(err);
+	}
+}
 
 const getAppointments = async (req, res, next) => {
   try {
@@ -8,7 +32,7 @@ const getAppointments = async (req, res, next) => {
     let result = null;
     switch (user.rol) {
       case "10":
-        result = await postgres.appointmentsReadMech(user.id);
+        result = await pgAppointments.appointmentsReadMech(user.id);
         break;
       case "01":
         result = {error: "Mecánico no autorizado."};
@@ -16,7 +40,7 @@ const getAppointments = async (req, res, next) => {
       case "11":
       case "00":
       default:
-        result = await postgres.appointmentsReadUser(user.id);
+        result = await pgAppointments.appointmentsReadUser(user.id);
         break;
     }
     if (result.error)
@@ -37,7 +61,7 @@ const getAppointments = async (req, res, next) => {
 
 const postAppointment = async (req, res, next) => {
   try {
-    const result = await postgres.appointmentCreate(req.body);
+    const result = await pgAppointments.appointmentCreate(req.body);
     if (result.error)
       throw new Error(`Error ${result.error}.`);
     else if (result.data)
@@ -58,34 +82,34 @@ const patchAppointment = async (req, res, next) => {
           if (appointment.confirmado || appointment.cancelado)
             throw new Error("La cita ya no se puede modificar.");
           else
-            result = await postgres.appointmentUpdate(req.body);
+            result = await pgAppointments.appointmentUpdate(req.body);
           break;
         case '1':
           if (appointment.confirmado || appointment.cancelado)
             throw new Error("La cita ya no se puede modificar.");
           else
-            result = await postgres.appointmentCancel(user.id === appointment.id_usuario ? false : true, req.body.id, user.id);
+            result = await pgAppointments.appointmentCancel(user.id === appointment.id_usuario ? false : true, req.body.id, user.id);
           break;
         case '2':
           if (user.id === appointment.id_mech)
-            result = await postgres.appointmentConfirm(req.body.id);
+            result = await pgAppointments.appointmentConfirm(req.body.id);
           else
             throw new Error("Solo el mech puede confirmar la cita.");
           break;
         case '3':
-          result = await postgres.appointmentCarTake(req.body.id);
+          result = await pgAppointments.appointmentCarTake(req.body.id);
           break;
         case '4':
-          result = await postgres.appointmentCarDeliver(req.body.id);
+          result = await pgAppointments.appointmentCarDeliver(req.body.id);
           break;
         case '5':
-          result = await postgres.appointmentComplete(req.body.id);
+          result = await pgAppointments.appointmentComplete(req.body.id);
           break;
         case '6':
           if (user.id === appointment.id_usuario)
-            result = await postgres.appointmentCommentUser(req.body);
+            result = await pgAppointments.appointmentCommentUser(req.body);
           else if (user.id === appointment.id_mech)
-            result = await postgres.appointmentCommentMech(req.body);
+            result = await pgAppointments.appointmentCommentMech(req.body);
           break;
         default:
           res.status(409).json({
@@ -104,6 +128,7 @@ const patchAppointment = async (req, res, next) => {
 }
 
 export default {
+	readFormData,
   getAppointments,
   postAppointment,
   patchAppointment

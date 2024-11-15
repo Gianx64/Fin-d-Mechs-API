@@ -1,16 +1,42 @@
 import { pool } from "./pool.js";
 
 const queries = {
-workshopsReadMech:  "SELECT * FROM workshops WHERE id_usuario = $1",
+workshopsRead:      "SELECT * FROM workshops WHERE activo = TRUE",
+workshopsReadMech:  "SELECT * FROM workshops WHERE id_usuario = $1 AND activo = TRUE",
+workshopReadMechs:  "SELECT * FROM workshopmechs WHERE id_workshop = $1",
 workshopCreate:     "INSERT INTO workshops (id_usuario, ciudad, direccion, detalles) VALUES ($1, $2, $3, $4) RETURNING *",
 workshopUpdate:     "UPDATE workshops SET (ciudad, direccion, detalles) = ($1, $2, $3) WHERE id = $4",
 workshopDeactivate: "UPDATE workshops SET (activo) = (FALSE) WHERE id = $1"
 }
 
+function workshopsRead() {
+  try {
+    return new Promise((resolve) => {
+      pool.query(queries.workshopsReadMech, (err, result) => {
+        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
+      });
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
 function workshopsReadMech(id) {
   try {
     return new Promise((resolve) => {
       pool.query(queries.workshopsReadMech, [id], (err, result) => {
+        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
+      });
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+function workshopReadMechs(id) {
+  try {
+    return new Promise((resolve) => {
+      pool.query(queries.workshopReadMechs, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
@@ -56,7 +82,9 @@ function workshopDeactivate(id) {
 };
 
 export default {
+  workshopsRead,
   workshopsReadMech,
+  workshopReadMechs,
   workshopCreate,
   workshopUpdate,
   workshopDeactivate

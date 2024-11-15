@@ -1,4 +1,4 @@
-import postgres from "../postgres/cars.js";
+import pgCars from "../postgres/cars.js";
 import authController from "./auth.js";
 
 const getCars = async (req, res, next) => {
@@ -12,7 +12,7 @@ const getCars = async (req, res, next) => {
         break;
       case "11":
       case "00":
-        result = await postgres.carsRead(user.id);
+        result = await pgCars.carsRead(user.id);
       default:
         result = {error: "Usuario no autorizado."};
         break;
@@ -35,7 +35,7 @@ const getCars = async (req, res, next) => {
 
 const postCar = async (req, res, next) => {
   try {
-    const result = await postgres.carCreate(req.body);
+    const result = await pgCars.carCreate(req.body);
     if (result.error)
       throw new Error(`Error ${result.error}.`);
     else if (result.data)
@@ -47,7 +47,7 @@ const postCar = async (req, res, next) => {
 
 const patchCar = async (req, res, next) => {
   try {
-    result = await postgres.carUpdate(req.body);
+    result = await pgCars.carUpdate(req.body);
     if (result.error)
       throw new Error(`Error ${result.error}.`);
     else if (result.data === 1)
@@ -61,7 +61,7 @@ const patchCar = async (req, res, next) => {
 
 const deactivateCar = async (req, res, next) => {
   try {
-    result = await postgres.carDeactivate(req.params.carId);
+    result = await pgCars.carDeactivate(req.params.carId);
     if (result.error)
       throw new Error(`Error ${result.error}.`);
     else if (result.data === 1)
