@@ -5,25 +5,41 @@ import pgUsers from "../postgres/users.js";
 import readWithId from "../postgres/pool.js"
 import authController from "./auth.js";
 
-//Returns mechs data list
+//Returns form data list
 async function readFormData(req, res, next) {
-	try {
+  try {
     const user = authController.decodifyHeader(req.headers.authorization);
     const cars = await pgCars.carsRead(user.id);
-		const mechs = await pgUsers.readMechs();
+    const mechs = await pgUsers.readMechs();
     const workshops = await pgWorkshops.workshopsRead();
-		if (result.error) {
-			throw new Error(`Error ${result.error}.`);
-		} else {
-			res.status(200).json({
-        cars: cars,
-        mechs: mechs,
-        workshops: workshops
+    if (cars.error)
+      throw new Error(`Error ${cars.error}.`);
+    if (mechs.error)
+      throw new Error(`Error ${mechs.error}.`);
+    if (workshops.error)
+      throw new Error(`Error ${workshops.error}.`);
+    else
+      res.status(200).json({
+        cars: cars.data,
+        mechs: mechs.data,
+        workshops: workshops.data
       });
-		}
-	} catch(err) {
-		next(err);
-	}
+  } catch(err) {
+    next(err);
+  }
+}
+
+//Returns mechs data list from given workshop
+async function workshopReadMechs(req, res, next) {
+  try {
+    const mechs = await pgWorkshops.workshopReadMechs(req.params.id);
+    if (mechs.error)
+      throw new Error(`Error ${mechs.error}.`);
+    else
+      res.status(200).json(mechs.data);
+  } catch(err) {
+    next(err);
+  }
 }
 
 const getAppointments = async (req, res, next) => {
@@ -128,7 +144,8 @@ const patchAppointment = async (req, res, next) => {
 }
 
 export default {
-	readFormData,
+  readFormData,
+  workshopReadMechs,
   getAppointments,
   postAppointment,
   patchAppointment

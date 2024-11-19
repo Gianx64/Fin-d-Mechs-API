@@ -3,7 +3,8 @@ import { pool } from "./pool.js";
 const queries = {
 workshopsRead:      "SELECT * FROM workshops WHERE activo = TRUE",
 workshopsReadMech:  "SELECT * FROM workshops WHERE id_usuario = $1 AND activo = TRUE",
-workshopReadMechs:  "SELECT * FROM workshopmechs WHERE id_workshop = $1",
+workshopReadMechs:  `SELECT users.id, users.nombre, users.celular, users.correo FROM workshopmechs WHERE id_workshop = $1
+                      RIGHT JOIN users ON workshopmechs.id_mech = users.id`,
 workshopCreate:     "INSERT INTO workshops (id_usuario, ciudad, direccion, detalles) VALUES ($1, $2, $3, $4) RETURNING *",
 workshopUpdate:     "UPDATE workshops SET (ciudad, direccion, detalles) = ($1, $2, $3) WHERE id = $4",
 workshopDeactivate: "UPDATE workshops SET (activo) = (FALSE) WHERE id = $1"
@@ -12,7 +13,7 @@ workshopDeactivate: "UPDATE workshops SET (activo) = (FALSE) WHERE id = $1"
 function workshopsRead() {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.workshopsReadMech, (err, result) => {
+      pool.query(queries.workshopsRead, (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
