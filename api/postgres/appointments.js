@@ -1,16 +1,20 @@
 import { pool } from "./pool.js";
 
 const queries = {
-appointmentCreate:      `INSERT INTO appointments (id_usuario, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, id_mech, servicio, id_taller)
-                          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
-appointmentsReadUser:   `SELECT appointments.*, users.nombre as mech_usuario, users.celular as mech_celular, users.correo as mech_correo
-                          FROM appointments LEFT JOIN users ON appointments.id_mech = users.id WHERE appointments.id_usuario = $1`,
-appointmentsReadMech:   `SELECT appointments.*, users.nombre as user_usuario, users.celular as user_celular, users.correo as user_correo
-                          FROM appointments LEFT JOIN users ON appointments.id_usuario = users.id WHERE appointments.id_mech = $1 OR appointments.id_mech = NULL`,
+appointmentCreate:      `INSERT INTO appointments (id_usuario, fecha, ciudad, direccion, id_auto, detalles, id_mech, servicio, id_taller)
+                          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+appointmentsReadUser:   `SELECT appointments.*, cars.patente, cars.vin, cars.marca, cars.modelo,
+                          users.nombre as mech_usuario, users.celular as mech_celular, users.correo as mech_correo
+                          FROM appointments LEFT JOIN cars ON appointments.id_auto = cars.id LEFT JOIN users ON appointments.id_mech = users.id
+                          WHERE appointments.id_usuario = $1`,
+appointmentsReadMech:   `SELECT appointments.*, cars.patente, cars.vin, cars.marca, cars.modelo,
+                          users.nombre as user_usuario, users.celular as user_celular, users.correo as user_correo
+                          FROM appointments LEFT JOIN cars ON appointments.id_auto = cars.id LEFT JOIN users ON appointments.id_usuario = users.id
+                          WHERE appointments.id_mech = $1 OR appointments.id_mech = NULL`,
 appointmentsReadWorkshop:       "SELECT * FROM appointments WHERE id_taller = $1",
 appointmentsActiveReadWorkshop: "SELECT * FROM appointments WHERE id_taller = $1 AND cancelado = NULL AND completado = NULL",
-appointmentUpdate:      `UPDATE appointments SET (actualizado, fecha, ciudad, direccion, auto_marca, auto_modelo, detalles, id_mech, servicio, id_taller)
-                          = (NOW(), $1, $2, $3, $4, $5, $6, $7, $8, $9) WHERE id = $10`,
+appointmentUpdate:      `UPDATE appointments SET (actualizado, fecha, ciudad, direccion, id_auto, detalles, id_mech, servicio, id_taller)
+                          = (NOW(), $1, $2, $3, $4, $5, $6, $7, $8) WHERE id = $9`,
 appointmentCancel:      "UPDATE appointments SET (actualizado, cancelado, canceladopor) = (NOW(), NOW(), $1) WHERE id = $2",
 appointmentConfirm:     "UPDATE appointments SET (actualizado, confirmado) = (NOW(), NOW()) WHERE id = $1",
 appointmentMechTake:    "UPDATE appointments SET (actualizado, confirmado, id_mech) = (NOW(), NOW(), $1) WHERE id = $2 AND id_mech = NULL",

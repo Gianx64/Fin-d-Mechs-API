@@ -17,7 +17,6 @@ const getWorkshops = async (req, res, next) => {
 			case "00":
 			default:
 				result = {error: "Usuario no autorizado."};
-				break;
 		}
 		if (result.error)
 			if (typeof result.error === "number")

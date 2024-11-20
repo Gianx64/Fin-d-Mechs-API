@@ -57,7 +57,6 @@ const getAppointments = async (req, res, next) => {
       case "00":
       default:
         result = await pgAppointments.appointmentsReadUser(user.id);
-        break;
     }
     if (result.error)
       if (typeof result.error === "number")

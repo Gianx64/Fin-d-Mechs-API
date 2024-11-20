@@ -4,7 +4,7 @@ const queries = {
 carsRead:       "SELECT * FROM cars WHERE id_usuario = $1 AND cita = FALSE AND activo = TRUE",
 carCreate:      "INSERT INTO cars (id_usuario, patente, vin, marca, modelo) VALUES ($1, $2, $3, $4, $5) RETURNING *",
 carUpdate:      "UPDATE cars SET (patente, vin, marca, modelo) = ($1, $2, $3, $4) WHERE id = $5 AND cita = FALSE",
-carDeactivate:  "UPDATE cars SET (activo = FALSE) WHERE id = $1 AND cita = FALSE"
+carDeactivate:  "UPDATE cars SET (activo = FALSE) WHERE id = $1"
 }
 
 function carsRead(id) {

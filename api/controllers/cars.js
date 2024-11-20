@@ -13,9 +13,9 @@ const getCars = async (req, res, next) => {
       case "11":
       case "00":
         result = await pgCars.carsRead(user.id);
+        break;
       default:
         result = {error: "Usuario no autorizado."};
-        break;
     }
     if (result.error)
       if (typeof result.error === "number")

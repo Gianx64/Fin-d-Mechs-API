@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS workshops(
 CREATE TABLE IF NOT EXISTS workshopmechs(
     id SMALLSERIAL PRIMARY KEY,
     id_mech SMALLINT NOT NULL REFERENCES users(id),
-    id_workshop SMALLINT NOT NULL REFERENCES workshops(id),
+    id_workshop SMALLINT NOT NULL REFERENCES workshops(id)
 );
 CREATE TABLE IF NOT EXISTS appointments(
     id SERIAL PRIMARY KEY,
