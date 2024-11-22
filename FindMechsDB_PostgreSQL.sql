@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS cars(
 CREATE TABLE IF NOT EXISTS workshops(
     id SMALLSERIAL PRIMARY KEY,
     id_usuario SMALLINT NOT NULL REFERENCES users(id),
+    nombre VARCHAR(64) NOT NULL,
     ciudad VARCHAR(64) NOT NULL,
     direccion VARCHAR(64) NOT NULL,
     detalles VARCHAR(128),

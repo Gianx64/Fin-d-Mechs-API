@@ -1,6 +1,6 @@
 import { pool } from "./pool.js";
 
-const queries = {
+export const userQueries = {
 readMechs:        "SELECT id, nombre, correo FROM users WHERE rol = '10'",
 userDeactivated:  "SELECT * FROM users WHERE correo = $1 AND activo = FALSE",
 userCreate:       "INSERT INTO users (nombre, celular, correo, clave, rol) VALUES ($1, $2, $3, $4, $5) RETURNING *",
@@ -14,7 +14,7 @@ userDisable:      "UPDATE users SET (activo) = (FALSE) WHERE id = $1"
 function readMechs() {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.readMechs, (err, result) => {
+      pool.query(userQueries.readMechs, (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
@@ -26,13 +26,13 @@ function readMechs() {
 function userCreate(data) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.userDeactivated, [data.correo], (err, result) => {
+      pool.query(userQueries.userDeactivated, [data.correo], (err, result) => {
         if (result.rowCount > 2)
           return resolve({error: "Correo deshabilitado."});
-        pool.query(queries.userRead, [data.correo], (err, result) => {
+        pool.query(userQueries.userRead, [data.correo], (err, result) => {
           if (result.rowCount > 0)
             return resolve({error: "Este correo ya está siendo utilizado."});
-          pool.query(queries.userCreate, [data.nombre, data.celular, data.correo, data.clave, data.rol], (err, result) => {
+          pool.query(userQueries.userCreate, [data.nombre, data.celular, data.correo, data.clave, data.rol], (err, result) => {
             return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows[0]});
           });
         });
@@ -46,7 +46,7 @@ function userCreate(data) {
 function userRead(correo) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.userRead, [correo], (err, result) => {
+      pool.query(userQueries.userRead, [correo], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
@@ -58,10 +58,10 @@ function userRead(correo) {
 function userUpdate(data) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.userDeactivated, [data.correo], (err, result) => {
+      pool.query(userQueries.userDeactivated, [data.correo], (err, result) => {
         if (result.rowCount > 2)
           return resolve({error: "Correo deshabilitado."});
-        pool.query(queries.userUpdate, [data.nombre, data.celular, data.correo, data.clave, data.rol, data.id], (err, result) => {
+        pool.query(userQueries.userUpdate, [data.nombre, data.celular, data.correo, data.clave, data.rol, data.id], (err, result) => {
           return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
         });
       });
@@ -74,7 +74,7 @@ function userUpdate(data) {
 function userUpgrade(id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.userUpgrade, [id], (err, result) => {
+      pool.query(userQueries.userUpgrade, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
@@ -86,7 +86,7 @@ function userUpgrade(id) {
 function userDisable(id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.userDisable, [id], (err, result) => {
+      pool.query(userQueries.userDisable, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
@@ -96,6 +96,7 @@ function userDisable(id) {
 };
 
 export default {
+  userQueries,
   readMechs,
   userCreate,
   userRead,

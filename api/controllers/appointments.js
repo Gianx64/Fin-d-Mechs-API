@@ -106,21 +106,24 @@ const patchAppointment = async (req, res, next) => {
             result = await pgAppointments.appointmentCancel(user.id === appointment.id_usuario ? false : true, req.body.id, user.id);
           break;
         case '2':
+          result = await pgAppointments.appointmentMechTake(user.id, req.body.id);
+          break;
+        case '3':
           if (user.id === appointment.id_mech)
             result = await pgAppointments.appointmentConfirm(req.body.id);
           else
             throw new Error("Solo el mech puede confirmar la cita.");
           break;
-        case '3':
+        case '4':
           result = await pgAppointments.appointmentCarTake(req.body.id);
           break;
-        case '4':
+        case '5':
           result = await pgAppointments.appointmentCarDeliver(req.body.id);
           break;
-        case '5':
+        case '6':
           result = await pgAppointments.appointmentComplete(req.body.id);
           break;
-        case '6':
+        case '7':
           if (user.id === appointment.id_usuario)
             result = await pgAppointments.appointmentCommentUser(req.body);
           else if (user.id === appointment.id_mech)

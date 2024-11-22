@@ -1,7 +1,5 @@
 import { createServer } from 'http';
 import app from './api/app.js';
 
-const port = process.env.PORT;
 const server = createServer(app);
-
-server.listen(port, () => {console.log("Server running on port "+port)});
+server.listen(process.env.PORT, () => {console.log("Server running on port", process.env.PORT)});

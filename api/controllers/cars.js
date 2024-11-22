@@ -47,7 +47,7 @@ const postCar = async (req, res, next) => {
 
 const patchCar = async (req, res, next) => {
   try {
-    result = await pgCars.carUpdate(req.body);
+    const result = await pgCars.carUpdate(req.body);
     if (result.error)
       throw new Error(`Error ${result.error}.`);
     else if (result.data === 1)
