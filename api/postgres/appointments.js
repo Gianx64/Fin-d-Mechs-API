@@ -1,11 +1,14 @@
 import { pool } from "./pool.js";
+import { carQueries } from "./cars.js"
+import { userQueries } from "./users.js"
 
-const queries = {
+const appointmentQueries = {
 appointmentCreate:      `INSERT INTO appointments (id_usuario, fecha, ciudad, direccion, id_auto, detalles, id_mech, servicio, id_taller)
                           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
-appointmentsReadUser:   `SELECT appointments.*, cars.patente, cars.vin, cars.marca, cars.modelo,
+appointmentsReadUser:   `SELECT appointments.*, cars.patente, cars.vin, cars.marca, cars.modelo, workshop.nombre, workshop.direccion as taller_direccion
                           users.nombre as mech_usuario, users.celular as mech_celular, users.correo as mech_correo
                           FROM appointments LEFT JOIN cars ON appointments.id_auto = cars.id LEFT JOIN users ON appointments.id_mech = users.id
+                          LEFT JOIN workshops ON appointments.id_taller = workshops.id
                           WHERE appointments.id_usuario = $1`,
 appointmentsReadMech:   `SELECT appointments.*, cars.patente, cars.vin, cars.marca, cars.modelo,
                           users.nombre as user_usuario, users.celular as user_celular, users.correo as user_correo
@@ -28,10 +31,22 @@ appointmentCommentMech: "UPDATE appointments SET (actualizado, mech_comentario_t
 function appointmentCreate(data) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentCreate,
-        [data.usuario, data.fecha, data.ciudad, data.direccion, data.auto_marca, data.auto_modelo, data.detalles || null, data.mech, data.servicio || null, data.id_taller || null],
-        (err, result) => {
-        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows[0]});
+      pool.query("BEGIN");
+      pool.query(appointmentQueries.appointmentCreate,
+        [data.id_usuario, data.fecha, data.ciudad, data.direccion, data.id_auto, data.detalles || null, data.id_mech, data.servicio || null, data.id_taller || null],
+        (err, appointmentResult) => {
+          if (err){
+            pool.query("ROLLBACK");
+            return resolve({error: parseInt(err.code)});
+          }
+          pool.query(carQueries.carAppointed, [data.id_auto], (err, carResult) => {
+            if (err){
+              pool.query("ROLLBACK");
+              return resolve({error: parseInt(err.code)});
+            }
+            pool.query("COMMIT");
+            return resolve({data: appointmentResult.rows[0]});
+          });
       });
     });
   } catch (err) {
@@ -42,7 +57,7 @@ function appointmentCreate(data) {
 function appointmentsReadUser(id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentsReadUser, [id], (err, result) => {
+      pool.query(appointmentQueries.appointmentsReadUser, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
@@ -54,7 +69,7 @@ function appointmentsReadUser(id) {
 function appointmentsReadMech(id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentsReadMech, [id], (err, result) => {
+      pool.query(appointmentQueries.appointmentsReadMech, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
@@ -66,7 +81,7 @@ function appointmentsReadMech(id) {
 function appointmentsReadWorkshop(id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentsReadWorkshop, [id], (err, result) => {
+      pool.query(appointmentQueries.appointmentsReadWorkshop, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
@@ -78,7 +93,7 @@ function appointmentsReadWorkshop(id) {
 function appointmentsActiveReadWorkshop(id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentsActiveReadWorkshop, [id], (err, result) => {
+      pool.query(appointmentQueries.appointmentsActiveReadWorkshop, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
@@ -90,8 +105,8 @@ function appointmentsActiveReadWorkshop(id) {
 function appointmentUpdate(data) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentUpdate,
-        [data.fecha, data.ciudad, data.direccion, data.auto_marca, data.auto_modelo, data.detalles, data.mech, data.servicio, data.id_taller, data.id],
+      pool.query(appointmentQueries.appointmentUpdate,
+        [data.fecha, data.ciudad, data.direccion, data.id_auto, data.detalles || null, data.id_mech, data.servicio || null, data.id_taller || null, data.id],
         (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
@@ -104,16 +119,26 @@ function appointmentUpdate(data) {
 function appointmentCancel(canceller, appointmentId, userId) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentCancel, [canceller, appointmentId], (err, appointmentResult) => {
-        if (err)
+      pool.query("BEGIN");
+      pool.query(appointmentQueries.appointmentCancel, [canceller, appointmentId], (err, appointmentResult) => {
+        if (err) {
+          pool.query("ROLLBACK");
           return resolve({error: parseInt(err.code)});
-        else if (appointmentResult.rowCount == 0)
+        }
+        else if (appointmentResult.rowCount == 0) {
+          pool.query("ROLLBACK");
           return resolve({error: "No se pudo marcar la cita como cancelada."});
-        pool.query(queries.userClean, [userId], (err, userResult) => {
-          if (err)
+        }
+        pool.query(userQueries.userClean, [userId], (err, userResult) => {
+          if (err) {
+            pool.query("ROLLBACK");
             return resolve({error: parseInt(err.code)});
-          else if (userResult.rowCount == 0)
+          }
+          else if (userResult.rowCount == 0) {
+            pool.query("ROLLBACK");
             return resolve({error: "No se pudo liberar al usuario de la cita."});
+          }
+          pool.query("COMMIT");
           return resolve({data: appointmentResult.rowCount < userResult.rowCount ? userResult.rowCount : appointmentResult.rowCount});
         });
       });
@@ -126,7 +151,7 @@ function appointmentCancel(canceller, appointmentId, userId) {
 function appointmentConfirm(id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentConfirm, [id], (err, result) => {
+      pool.query(appointmentQueries.appointmentConfirm, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
@@ -138,7 +163,7 @@ function appointmentConfirm(id) {
 function appointmentMechTake(mechId, appointmentId) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentMechTake, [mechId, appointmentId], (err, result) => {
+      pool.query(appointmentQueries.appointmentMechTake, [mechId, appointmentId], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
@@ -150,7 +175,7 @@ function appointmentMechTake(mechId, appointmentId) {
 function appointmentCarTake(id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentCarTake, [id], (err, result) => {
+      pool.query(appointmentQueries.appointmentCarTake, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
@@ -162,7 +187,7 @@ function appointmentCarTake(id) {
 function appointmentCarDeliver(id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentCarDeliver, [id], (err, result) => {
+      pool.query(appointmentQueries.appointmentCarDeliver, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
@@ -174,16 +199,26 @@ function appointmentCarDeliver(id) {
 function appointmentComplete(appointmentId, userId) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentComplete, [appointmentId], (err, appointmentResult) => {
-        if (err)
+      pool.query("BEGIN");
+      pool.query(appointmentQueries.appointmentComplete, [appointmentId], (err, appointmentResult) => {
+        if (err) {
+          pool.query("ROLLBACK");
           return resolve({error: parseInt(err.code)});
-        else if (appointmentResult.rowCount == 0)
+        }
+        else if (appointmentResult.rowCount == 0) {
+          pool.query("ROLLBACK");
           return resolve({error: "No se pudo marcar la cita como completada."});
-        pool.query(queries.userClean, [userId], (err, userResult) => {
-          if (err)
+        }
+        pool.query(userQueries.userClean, [userId], (err, userResult) => {
+          if (err) {
+            pool.query("ROLLBACK");
             return resolve({error: parseInt(err.code)});
-          else if (userResult.rowCount == 0)
+          }
+          else if (userResult.rowCount == 0) {
+            pool.query("ROLLBACK");
             return resolve({error: "No se pudo liberar al usuario de la cita."});
+          }
+          pool.query("COMMIT");
           return resolve({data: appointmentResult.rowCount < userResult.rowCount ? userResult.rowCount : appointmentResult.rowCount});
         });
       });
@@ -196,7 +231,7 @@ function appointmentComplete(appointmentId, userId) {
 function appointmentCommentUser(comment, id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentCommentUser, [comment, id], (err, result) => {
+      pool.query(appointmentQueries.appointmentCommentUser, [comment, id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
@@ -208,7 +243,7 @@ function appointmentCommentUser(comment, id) {
 function appointmentCommentMech(comment, id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.appointmentCommentMech, [comment, id], (err, result) => {
+      pool.query(appointmentQueries.appointmentCommentMech, [comment, id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
