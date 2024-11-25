@@ -19,10 +19,10 @@ app.use((req, res, next) => {
 });
 
 //Route groups
-app.use("/api/appointments", appointmentRoutes);
-app.use("/api/cars", carRoutes);
-app.use("/api/workshops", workshopRoutes);
-app.use("/api/auth", authRoutes);
+app.use("/appointments", appointmentRoutes);
+app.use("/cars", carRoutes);
+app.use("/workshops", workshopRoutes);
+app.use("/auth", authRoutes);
 
 //OPTIONS route
 app.use((req, res, next) => {

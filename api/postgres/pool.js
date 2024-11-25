@@ -26,10 +26,10 @@ async function conpg() {
 
 conpg();
 
-function readWithId(table, id) {
+export function readWithId(table, id) {
   try {
     return new Promise((resolve) => {
-      pool.query("SELECT * FROM $1 WHERE id = $2", [table, id], (err, result) => {
+      pool.query(`SELECT * FROM ${table} WHERE id = $1`, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows[0]});
       });
     });

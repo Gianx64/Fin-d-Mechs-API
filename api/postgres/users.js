@@ -1,27 +1,15 @@
 import { pool } from "./pool.js";
 
 export const userQueries = {
-readMechs:        "SELECT id, nombre, correo FROM users WHERE rol = '10'",
-userDeactivated:  "SELECT * FROM users WHERE correo = $1 AND activo = FALSE",
 userCreate:       "INSERT INTO users (nombre, celular, correo, clave, rol) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+userDeactivated:  "SELECT * FROM users WHERE correo = $1 AND activo = FALSE",
 userRead:         "SELECT * FROM users WHERE correo = $1 AND activo = TRUE",
-userClean:        "UPDATE users SET (cita) = (NULL) WHERE id = $1 AND activo = TRUE",
 userUpdate:       "UPDATE users SET (nombre, celular, correo, clave, rol) = ($1, $2, $3, $4, $5) WHERE id = $6 AND activo = TRUE",
-userUpgrade:      "UPDATE users SET (rol) = (b'10') WHERE id = $1 AND activo = TRUE",
-userDisable:      "UPDATE users SET (activo) = (FALSE) WHERE id = $1"
+userDisable:      "UPDATE users SET activo = FALSE WHERE id = $1",
+mechsRead:        "SELECT id, nombre, celular, correo FROM users WHERE rol = '10' AND activo = TRUE", //AND verificado != NULL
+mechsNotRead:     "SELECT id, nombre, celular, correo FROM users WHERE rol = '01' AND activo = TRUE", //AND verificado != NULL
+mechUpgrade:      "UPDATE users SET rol = b'10' WHERE id = $1 AND activo = TRUE"
 }
-
-function readMechs() {
-  try {
-    return new Promise((resolve) => {
-      pool.query(userQueries.readMechs, (err, result) => {
-        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
-      });
-    });
-  } catch (err) {
-    throw new Error(err);
-  }
-};
 
 function userCreate(data) {
   try {
@@ -71,18 +59,6 @@ function userUpdate(data) {
   }
 };
 
-function userUpgrade(id) {
-  try {
-    return new Promise((resolve) => {
-      pool.query(userQueries.userUpgrade, [id], (err, result) => {
-        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
-      });
-    });
-  } catch (err) {
-    throw new Error(err);
-  }
-};
-
 function userDisable(id) {
   try {
     return new Promise((resolve) => {
@@ -95,12 +71,49 @@ function userDisable(id) {
   }
 };
 
+function mechsRead() {
+  try {
+    return new Promise((resolve) => {
+      pool.query(userQueries.mechsRead, (err, result) => {
+        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
+      });
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+function mechsNotRead() {
+  try {
+    return new Promise((resolve) => {
+      pool.query(userQueries.mechsNotRead, (err, result) => {
+        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
+      });
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+function mechUpgrade(id) {
+  try {
+    return new Promise((resolve) => {
+      pool.query(userQueries.mechUpgrade, [id], (err, result) => {
+        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
+      });
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
 export default {
   userQueries,
-  readMechs,
   userCreate,
   userRead,
   userUpdate,
-  userUpgrade,
-  userDisable
+  userDisable,
+  mechsRead,
+  mechsNotRead,
+  mechUpgrade
 }

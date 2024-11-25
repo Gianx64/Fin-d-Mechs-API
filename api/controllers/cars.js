@@ -1,5 +1,6 @@
-import pgCars from "../postgres/cars.js";
-import authController from "./auth.js";
+import pgCars from "../postgres/cars.js"
+import { readWithId } from "../postgres/pool.js"
+import authController from "./auth.js"
 
 const getCars = async (req, res, next) => {
   try {
@@ -24,10 +25,9 @@ const getCars = async (req, res, next) => {
         throw new Error(result.error);
     else if (result.data)
       res.status(200).json(result.data);
-    else
-      res.status(409).json({
-        message: "Error obteniendo autos."
-      });
+    res.status(409).json({
+      message: "Error obteniendo autos."
+    });
   } catch(err) {
     next(err);
   }
@@ -38,8 +38,7 @@ const postCar = async (req, res, next) => {
     const result = await pgCars.carCreate(req.body);
     if (result.error)
       throw new Error(`Error ${result.error}.`);
-    else if (result.data)
-      res.status(201).json(result.data);
+    res.status(201).json(result.data);
   } catch(err) {
     next(err);
   }
@@ -47,13 +46,19 @@ const postCar = async (req, res, next) => {
 
 const patchCar = async (req, res, next) => {
   try {
-    const result = await pgCars.carUpdate(req.body);
+    const car = (await readWithId("cars", req.body.id)).data;
+    let result;
+    if (car.cita)
+      throw new Error("Este auto no se puede modificar con una cita pendiente.");
+    else if (car.citado) {
+      await pgCars.carDeactivate(req.body.id);
+      result = await pgCars.carCreate(req.body);
+    }
+    else
+      result = await pgCars.carUpdate(req.body);
     if (result.error)
       throw new Error(`Error ${result.error}.`);
-    else if (result.data === 1)
-      res.status(200).json(result.data);
-    else
-      throw new Error("Este auto tiene una cita pendiente.");
+    res.status(200).json(result.data);
   } catch(err) {
     next(err);
   }
@@ -61,13 +66,10 @@ const patchCar = async (req, res, next) => {
 
 const deactivateCar = async (req, res, next) => {
   try {
-    result = await pgCars.carDeactivate(req.params.carId);
+    const result = await pgCars.carDeactivate(req.params.carId);
     if (result.error)
       throw new Error(`Error ${result.error}.`);
-    else if (result.data === 1)
-      res.status(200).json(result.data);
-    else
-      throw new Error("Este auto tiene una cita pendiente.");
+    res.status(200).json(result.data);
   } catch(err) {
     next(err);
   }
