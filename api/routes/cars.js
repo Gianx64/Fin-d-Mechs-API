@@ -4,8 +4,9 @@ import authController from "../controllers/auth.js";
 
 const router = Router();
 
-router.get('/', carController.getCars);
-router.post('/', authController.checkAuth, carController.postCar);
-router.patch("/:carId", authController.checkAuth, carController.patchCar);
+router.get('/', carController.readCars);
+router.post('/', authController.checkAuth, carController.createCar);
+router.patch("/", authController.checkAuth, carController.updateCar);
+router.delete("/:id", authController.checkAuth, carController.deactivateCar);
 
 export default router;

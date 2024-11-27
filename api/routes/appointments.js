@@ -4,11 +4,11 @@ import authController from "../controllers/auth.js";
 
 const router = Router();
 
-router.get('/', appointmentController.getAppointments);
-router.post('/', authController.checkAuth, appointmentController.postAppointment);
 router.get("/formdata", appointmentController.getFormData);
-router.get("/workshopmechs/:id", authController.checkAuth, appointmentController.workshopReadMechs);
-router.get("/:appointmentId/:flag", appointmentController.flagAppointment);
-router.patch("/:appointmentId/:action", appointmentController.patchAppointment);
+router.get("/workshopmechs/:id", authController.checkAuth, appointmentController.getWorkshopMechs);
+router.post('/', authController.checkAuth, appointmentController.createAppointment);
+router.get('/', appointmentController.readAppointments);
+router.put("/:appointmentId", appointmentController.updateAppointment);
+router.patch("/:appointmentId", appointmentController.flagAppointment);
 
 export default router;

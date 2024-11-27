@@ -1,11 +1,23 @@
 import pgWorkshops from "../postgres/workshops.js";
-import pgAppointments from "../postgres/appointments.js";
 import authController from "./auth.js";
+import { readWithId } from "../postgres/pool.js";
 
-const getWorkshops = async (req, res, next) => {
+const createWorkshop = async (req, res, next) => {
+  try {
+    await pgWorkshops.workshopCreate(req.body).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      res.status(201).json(result.data);
+    });
+  } catch(err) {
+    next(err);
+  }
+}
+
+const readWorkshops = async (req, res, next) => {
   try {
     const user = authController.decodifyHeader(req.headers.authorization);
-    let result = null;
+    let result;
     switch (user.rol) {
       case "10":
         result = await pgWorkshops.workshopsReadMech(user.id);
@@ -23,39 +35,28 @@ const getWorkshops = async (req, res, next) => {
         throw new Error(`Error ${result.error}.`);
       else
         throw new Error(result.error);
-    else if (result.data)
-      res.status(200).json(result.data);
-    res.status(409).json({
-      message: "Error obteniendo talleres."
-    });
+    res.status(200).json(result.data);
   } catch(err) {
     next(err);
   }
 }
 
-const postWorkshop = async (req, res, next) => {
+const updateWorkshop = async (req, res, next) => {
   try {
-    const result = await pgWorkshops.workshopCreate(req.body);
-    if (result.error)
-      throw new Error(`Error ${result.error}.`);
-    res.status(201).json(result.data);
-  } catch(err) {
-    next(err);
-  }
-}
-
-const patchWorkshop = async (req, res, next) => {
-  try {
-    const appointments = (await pgAppointments.appointmentsReadWorkshop(req.params.workshopId)).data;
-    let result;
-    if (appointments.length === 0) {
-      result = await pgWorkshops.workshopUpdate(req.body);
+    const appointed = await readWithId("workshops", req.body.id).then(result => {
       if (result.error)
         throw new Error(`Error ${result.error}.`);
-      res.status(200).json(result.data);
-    }
-    else
-      throw new Error("Este taller ya no se puede modificar.");
+      return result.data.cita;
+    });
+    let result;
+    if (appointed) {
+      await pgWorkshops.workshopDeactivate(req.body.id);
+      result = await pgWorkshops.workshopCreate(req.body);
+    } else
+      result = await pgWorkshops.workshopUpdate(req.body);
+    if (result.error)
+      throw new Error(`Error ${result.error}.`);
+    res.status(200).json(result.data);
   } catch(err) {
     next(err);
   }
@@ -63,24 +64,20 @@ const patchWorkshop = async (req, res, next) => {
 
 const deactivateWorkshop = async (req, res, next) => {
   try {
-    const appointments = (await pgAppointments.appointmentsActiveReadWorkshop(req.params.workshopId)).data;
-    let result;
-    if (appointments.length === 0) {
-      result = await pgWorkshops.workshopDeactivate(req.body);
+    await pgWorkshops.workshopDeactivate(req.params.id).then(result => {
       if (result.error)
         throw new Error(`Error ${result.error}.`);
+      //if (result.data === 1)
       res.status(200).json(result.data);
-    }
-    else
-      throw new Error("Este taller ya no se puede modificar.");
+    });
   } catch(err) {
     next(err);
   }
 }
 
 export default {
-  getWorkshops,
-  postWorkshop,
-  patchWorkshop,
+  createWorkshop,
+  readWorkshops,
+  updateWorkshop,
   deactivateWorkshop
 }

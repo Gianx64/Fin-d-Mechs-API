@@ -6,7 +6,8 @@ const router = Router();
 router.get('/', authController.getUserFromToken);
 router.post("/signup", authController.signUp);
 router.post("/signin", authController.signIn);
+router.delete("/:id", authController.signOff);
 router.get("/admindata", authController.checkAdmin, authController.getAdminData);
-router.get("/setmech/:id", authController.setMech);
+router.patch("/setmech", authController.setMech);
 
 export default router;

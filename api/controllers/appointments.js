@@ -9,19 +9,25 @@ import authController from "./auth.js"
 async function getFormData(req, res, next) {
   try {
     const user = authController.decodifyHeader(req.headers.authorization);
-    const cars = await pgCars.carsReadForm(user.id);
-    const mechs = await pgUsers.mechsRead();
-    const workshops = await pgWorkshops.workshopsRead();
-    if (cars.error)
-      throw new Error(`Error ${cars.error}.`);
-    if (mechs.error)
-      throw new Error(`Error ${mechs.error}.`);
-    if (workshops.error)
-      throw new Error(`Error ${workshops.error}.`);
+    const cars = await pgCars.carsReadForm(user.id).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}: cars.`);
+      return result.data;
+    });
+    const mechs = await pgUsers.mechsRead().then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}: mechs.`);
+      return result.data;
+    });
+    const workshops = await pgWorkshops.workshopsRead().then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}: workshops.`);
+      return result.data;
+    });
     res.status(200).json({
-      cars: cars.data,
-      mechs: mechs.data,
-      workshops: workshops.data
+      cars: cars,
+      mechs: mechs,
+      workshops: workshops
     });
   } catch(err) {
     next(err);
@@ -29,21 +35,34 @@ async function getFormData(req, res, next) {
 }
 
 //Returns mechs data list from given workshop
-async function workshopReadMechs(req, res, next) {
+async function getWorkshopMechs(req, res, next) {
   try {
-    const mechs = await pgWorkshops.workshopReadMechs(req.params.id);
-    if (mechs.error)
-      throw new Error(`Error ${mechs.error}.`);
-    res.status(200).json(mechs.data);
+    await pgWorkshops.workshopReadMechs(req.params.id).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      res.status(200).json(result.data);
+    });
   } catch(err) {
     next(err);
   }
 }
 
-const getAppointments = async (req, res, next) => {
+const createAppointment = async (req, res, next) => {
+  try {
+    await pgAppointments.appointmentCreate(req.body).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      res.status(201).json(result.data);
+    });
+  } catch(err) {
+    next(err);
+  }
+}
+
+const readAppointments = async (req, res, next) => {
   try {
     const user = authController.decodifyHeader(req.headers.authorization);
-    let result = null;
+    let result;
     switch (user.rol) {
       case "10":
         result = await pgAppointments.appointmentsReadMech(user.id);
@@ -61,36 +80,25 @@ const getAppointments = async (req, res, next) => {
         throw new Error(`Error ${result.error}.`);
       else
         throw new Error(result.error);
-    else if (result.data)
-      res.status(200).json(result.data);
-    res.status(409).json({
-      message: "Error obteniendo citas."
-    });
+    res.status(200).json(result.data);
   } catch(err) {
     next(err);
   }
 }
 
-const postAppointment = async (req, res, next) => {
-  try {
-    const result = await pgAppointments.appointmentCreate(req.body);
-    if (result.error)
-      throw new Error(`Error ${result.error}.`);
-    res.status(201).json(result.data);
-  } catch(err) {
-    next(err);
-  }
-}
-
-const patchAppointment = async (req, res, next) => {
+const updateAppointment = async (req, res, next) => {
   try {
     const user = authController.decodifyHeader(req.headers.authorization);
-    const appointment = (await readWithId("appointments", req.params.appointmentId)).data;
+    const appointment = await readWithId("appointments", req.params.appointmentId).then(result => {
+      if (result.data.cancelado)
+        throw new Error("La cita ya no se puede modificar.");
+      return result.data;
+    });
     let result;
     if (user.id === appointment.id_usuario || user.id === appointment.id_mech)
-      switch (req.params.action) {
+      switch (req.body.action) {
         case '0':
-          if (appointment.confirmado || appointment.cancelado)
+          if (appointment.confirmado)
             throw new Error("La cita ya no se puede modificar.");
           else
             result = await pgAppointments.appointmentUpdate(req.body);
@@ -119,15 +127,16 @@ const patchAppointment = async (req, res, next) => {
 const flagAppointment = async (req, res, next) => {
   try {
     const user = authController.decodifyHeader(req.headers.authorization);
-    const appointment = (await readWithId("appointments", req.params.appointmentId)).data;
+    const appointment = await readWithId("appointments", req.params.appointmentId).then(result => {
+      if (result.data.cancelado)
+        throw new Error("La cita ya no se puede modificar.");
+      return result.data;
+    });
     let result;
     if (user.id === appointment.id_usuario || user.id === appointment.id_mech)
-      switch (req.params.flag) {
+      switch (req.body.flag) {
         case '1':
-          if (appointment.confirmado || appointment.cancelado)
-            throw new Error("La cita ya no se puede modificar.");
-          else
-            result = await pgAppointments.appointmentCancel(user.id === appointment.id_usuario ? false : true, appointment.id, appointment.id_auto);
+          result = await pgAppointments.appointmentCancel(user.id === appointment.id_usuario ? false : true, appointment.id, appointment.id_auto);
           break;
         case '2':
           result = await pgAppointments.appointmentMechTake(user.id, appointment.id);
@@ -167,9 +176,9 @@ const flagAppointment = async (req, res, next) => {
 
 export default {
   getFormData,
-  workshopReadMechs,
-  getAppointments,
-  postAppointment,
-  patchAppointment,
+  getWorkshopMechs,
+  createAppointment,
+  readAppointments,
+  updateAppointment,
   flagAppointment
 }

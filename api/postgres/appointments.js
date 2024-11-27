@@ -1,6 +1,7 @@
 import { pool } from "./pool.js";
 import { carQueries } from "./cars.js"
 import { userQueries } from "./users.js"
+import { workshopQueries } from "./workshops.js";
 
 const appointmentQueries = {
 appointmentCreate:      `INSERT INTO appointments (id_usuario, fecha, ciudad, direccion, id_auto, detalles, id_mech, servicio, id_taller)
@@ -15,7 +16,6 @@ appointmentsReadMech:   `SELECT appointments.*, cars.patente, cars.vin, cars.mar
                           LEFT JOIN workshops ON appointments.id_taller = workshops.id
                           WHERE appointments.id_mech = $1 OR (appointments.id_mech IS NULL AND cancelado IS NULL AND completado IS NULL)`,
 appointmentsReadWorkshop:       "SELECT * FROM appointments WHERE id_taller = $1",
-appointmentsActiveReadWorkshop: "SELECT * FROM appointments WHERE id_taller = $1 AND cancelado IS NULL AND completado IS NULL",
 appointmentUpdate:      `UPDATE appointments SET (actualizado, fecha, ciudad, direccion, id_auto, detalles, id_mech, servicio, id_taller)
                           = (NOW(), $1, $2, $3, $4, $5, $6, $7, $8) WHERE id = $9`,
 appointmentCancel:      "UPDATE appointments SET (actualizado, cancelado, canceladopor) = (NOW(), NOW(), $1) WHERE id = $2",
@@ -44,8 +44,14 @@ function appointmentCreate(data) {
                 pool.query("ROLLBACK");
                 return resolve({error: parseInt(err.code)});
               }
-              pool.query("COMMIT");
-              return resolve({data: appointmentResult.rows[0]});
+              pool.query(workshopQueries.workshopAppointed, [data.id_taller], (err, workshopResult) => {
+                if (err){
+                  pool.query("ROLLBACK");
+                  return resolve({error: parseInt(err.code)});
+                }
+                pool.query("COMMIT");
+                return resolve({data: appointmentResult.rows[0]});
+              });
             });
         });
       });
@@ -83,18 +89,6 @@ function appointmentsReadWorkshop(id) {
   try {
     return new Promise((resolve) => {
       pool.query(appointmentQueries.appointmentsReadWorkshop, [id], (err, result) => {
-        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
-      });
-    });
-  } catch (err) {
-    throw new Error(err);
-  }
-};
-
-function appointmentsActiveReadWorkshop(id) {
-  try {
-    return new Promise((resolve) => {
-      pool.query(appointmentQueries.appointmentsActiveReadWorkshop, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
@@ -260,7 +254,6 @@ export default {
   appointmentsReadUser,
   appointmentsReadMech,
   appointmentsReadWorkshop,
-  appointmentsActiveReadWorkshop,
   appointmentUpdate,
   appointmentCancel,
   appointmentConfirm,

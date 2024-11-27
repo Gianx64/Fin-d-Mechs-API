@@ -2,10 +2,34 @@ import pgCars from "../postgres/cars.js"
 import { readWithId } from "../postgres/pool.js"
 import authController from "./auth.js"
 
-const getCars = async (req, res, next) => {
+const createCar = async (req, res, next) => {
+  try {
+    await pgCars.carReadPlate(req.body.patente).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      if (result.data !== "0")
+        throw new Error("Ya hay un auto registrado con esa patente.");
+    });
+    await pgCars.carReadVIN(req.body.vin).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      if (result.data !== "0")
+        throw new Error("Ya hay un auto registrado con ese VIN.");
+    });
+    await pgCars.carCreate(req.body).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      res.status(201).json(result.data);
+    });
+  } catch(err) {
+    next(err);
+  }
+}
+
+const readCars = async (req, res, next) => {
   try {
     const user = authController.decodifyHeader(req.headers.authorization);
-    let result = null;
+    let result;
     switch (user.rol) {
       case "10":
       case "01":
@@ -23,34 +47,33 @@ const getCars = async (req, res, next) => {
         throw new Error(`Error ${result.error}.`);
       else
         throw new Error(result.error);
-    else if (result.data)
-      res.status(200).json(result.data);
-    res.status(409).json({
-      message: "Error obteniendo autos."
+    res.status(200).json(result.data);
+  } catch(err) {
+    next(err);
+  }
+}
+
+const updateCar = async (req, res, next) => {
+  try {
+    const car = await readWithId("cars", req.body.id).then(result => {
+      if (result.data.cita)
+        throw new Error("Este auto no se puede modificar con una cita pendiente.");
+      return result.data;
     });
-  } catch(err) {
-    next(err);
-  }
-}
-
-const postCar = async (req, res, next) => {
-  try {
-    const result = await pgCars.carCreate(req.body);
-    if (result.error)
-      throw new Error(`Error ${result.error}.`);
-    res.status(201).json(result.data);
-  } catch(err) {
-    next(err);
-  }
-}
-
-const patchCar = async (req, res, next) => {
-  try {
-    const car = (await readWithId("cars", req.body.id)).data;
+    await pgCars.carReadPlate(req.body.patente).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      if (result.data !== "0")
+        throw new Error("Ya hay un auto registrado con esa patente.");
+    });
+    await pgCars.carReadVIN(req.body.vin).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      if (result.data !== "0")
+        throw new Error("Ya hay un auto registrado con ese VIN.");
+    });
     let result;
-    if (car.cita)
-      throw new Error("Este auto no se puede modificar con una cita pendiente.");
-    else if (car.citado) {
+    if (car.citado) {
       await pgCars.carDeactivate(req.body.id);
       result = await pgCars.carCreate(req.body);
     }
@@ -66,18 +89,19 @@ const patchCar = async (req, res, next) => {
 
 const deactivateCar = async (req, res, next) => {
   try {
-    const result = await pgCars.carDeactivate(req.params.carId);
-    if (result.error)
-      throw new Error(`Error ${result.error}.`);
-    res.status(200).json(result.data);
+    await pgCars.carDeactivate(req.params.id).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      res.status(200).json(result.data);
+    });
   } catch(err) {
     next(err);
   }
 }
 
 export default {
-  getCars,
-  postCar,
-  patchCar,
+  createCar,
+  readCars,
+  updateCar,
   deactivateCar
 }

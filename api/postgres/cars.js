@@ -4,6 +4,8 @@ export const carQueries = {
 carsRead:       "SELECT * FROM cars WHERE id_usuario = $1 AND activo = TRUE",
 carsReadForm:   "SELECT * FROM cars WHERE id_usuario = $1 AND cita = FALSE AND activo = TRUE",
 carCreate:      "INSERT INTO cars (id_usuario, patente, vin, marca, modelo) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+carReadPlate:   "SELECT COUNT(id) FROM cars WHERE patente = $1 AND activo = TRUE",
+carReadVIN:     "SELECT COUNT(id) FROM cars WHERE vin = $1 AND activo = TRUE",
 carClean:       "UPDATE cars SET cita = FALSE WHERE id = $1",
 carUpdate:      "UPDATE cars SET (patente, vin, marca, modelo) = ($1, $2, $3, $4) WHERE id = $5 AND cita = FALSE",
 carAppointed:   "UPDATE cars SET (cita, citado) = (TRUE, TRUE) WHERE id = $1",
@@ -46,6 +48,30 @@ function carCreate(data) {
   }
 };
 
+function carReadPlate(patente) {
+  try {
+    return new Promise((resolve) => {
+      pool.query(carQueries.carReadPlate, [patente], (err, result) => {
+        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows[0].count});
+      });
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+function carReadVIN(vin) {
+  try {
+    return new Promise((resolve) => {
+      pool.query(carQueries.carReadVIN, [vin], (err, result) => {
+        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows[0].count});
+      });
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
 function carUpdate(data) {
   try {
     return new Promise((resolve) => {
@@ -75,6 +101,8 @@ export default {
   carsRead,
   carsReadForm,
   carCreate,
+  carReadPlate,
+  carReadVIN,
   carUpdate,
   carDeactivate
 }

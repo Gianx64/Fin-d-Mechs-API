@@ -5,15 +5,21 @@ CREATE TABLE IF NOT EXISTS users(
     correo VARCHAR(64) NOT NULL,
     clave VARCHAR(64) NOT NULL,
     rol BIT(2) NOT NULL DEFAULT b'00',
+    registrado TIMESTAMP NOT NULL DEFAULT NOW(),
     verificado TIMESTAMP,
     activo BOOLEAN NOT NULL DEFAULT TRUE
 );
 COMMENT ON COLUMN users.rol IS '11=admin, 10=mech_verified, 01=mech_unverified, 00=user';
+CREATE TABLE IF NOT EXISTS mechs(
+    mech SMALLINT NOT NULL REFERENCES users(id),
+    verificadopor SMALLINT NOT NULL REFERENCES users(id),
+    verificado TIMESTAMP NOT NULL DEFAULT NOW()
+);
 CREATE TABLE IF NOT EXISTS cars(
     id SMALLSERIAL PRIMARY KEY,
     id_usuario SMALLINT NOT NULL REFERENCES users(id),
-    patente VARCHAR(10) UNIQUE NOT NULL,
-    vin VARCHAR(17) UNIQUE NOT NULL,
+    patente VARCHAR(10) NOT NULL,
+    vin VARCHAR(17) NOT NULL,
     marca VARCHAR(16) NOT NULL,
     modelo VARCHAR(32) NOT NULL,
     cita BOOLEAN NOT NULL DEFAULT FALSE,
@@ -27,12 +33,17 @@ CREATE TABLE IF NOT EXISTS workshops(
     ciudad VARCHAR(64) NOT NULL,
     direccion VARCHAR(64) NOT NULL,
     detalles VARCHAR(128),
+    cita BOOLEAN NOT NULL DEFAULT FALSE,
+    registrado TIMESTAMP NOT NULL DEFAULT NOW(),
+    verificado TIMESTAMP,
+    verificadopor SMALLINT NOT NULL REFERENCES users(id),
     activo BOOLEAN NOT NULL DEFAULT TRUE
 );
 CREATE TABLE IF NOT EXISTS workshopmechs(
     id SMALLSERIAL PRIMARY KEY,
     id_mech SMALLINT NOT NULL REFERENCES users(id),
-    id_workshop SMALLINT NOT NULL REFERENCES workshops(id)
+    id_workshop SMALLINT NOT NULL REFERENCES workshops(id),
+    registrado TIMESTAMP NOT NULL DEFAULT NOW()
 );
 CREATE TABLE IF NOT EXISTS appointments(
     id SERIAL PRIMARY KEY,
@@ -45,7 +56,7 @@ CREATE TABLE IF NOT EXISTS appointments(
     id_mech SMALLINT REFERENCES users(id),
     servicio BIT(2) NOT NULL,
     id_taller SMALLINT REFERENCES workshops(id),
-    ingresado TIMESTAMP DEFAULT NOW(),
+    registrado TIMESTAMP NOT NULL DEFAULT NOW(),
     actualizado TIMESTAMP,
     confirmado TIMESTAMP,
     cancelado TIMESTAMP,
