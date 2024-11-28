@@ -97,13 +97,13 @@ const updateAppointment = async (req, res, next) => {
     let result;
     if (user.id === appointment.id_usuario || user.id === appointment.id_mech)
       switch (req.body.action) {
-        case '0':
+        case 0:
           if (appointment.confirmado)
             throw new Error("La cita ya no se puede modificar.");
           else
             result = await pgAppointments.appointmentUpdate(req.body);
           break;
-        case '7':
+        case 7:
           if (user.id === appointment.id_usuario)
             result = await pgAppointments.appointmentCommentUser(req.body.comment, appointment.id);
           else if (user.id === appointment.id_mech)
@@ -133,28 +133,40 @@ const flagAppointment = async (req, res, next) => {
       return result.data;
     });
     let result;
-    if (user.id === appointment.id_usuario || user.id === appointment.id_mech)
+    if (user.id === appointment.id_usuario || user.id === appointment.id_mech || (user.rol === "10" && !appointment.id_mech))
       switch (req.body.flag) {
-        case '1':
+        case 1:
           result = await pgAppointments.appointmentCancel(user.id === appointment.id_usuario ? false : true, appointment.id, appointment.id_auto);
           break;
-        case '2':
-          result = await pgAppointments.appointmentMechTake(user.id, appointment.id);
+        case 2:
+          if (user.rol === "10")
+            result = await pgAppointments.appointmentMechTake(user.id, appointment.id);
+          else
+            throw new Error("Solo un mech puede tomar la cita.");
           break;
-        case '3':
+        case 3:
           if (user.id === appointment.id_mech)
             result = await pgAppointments.appointmentConfirm(appointment.id);
           else
             throw new Error("Solo el mech puede confirmar la cita.");
           break;
-        case '4':
-          result = await pgAppointments.appointmentCarTake(appointment.id);
+        case 4:
+          if (appointment.confirmado)
+            result = await pgAppointments.appointmentCarTake(appointment.id);
+          else
+            throw new Error("No se puede marcar el auto como tomado si la cita no ha sido confirmada.");
           break;
-        case '5':
-          result = await pgAppointments.appointmentCarDeliver(appointment.id);
+        case 5:
+          if (appointment.auto_tomado)
+            result = await pgAppointments.appointmentCarDeliver(appointment.id);
+          else
+            throw new Error("No se puede marcar el auto como devuelto si el auto no ha sido marcado como tomado.");
           break;
-        case '6':
-          result = await pgAppointments.appointmentComplete(appointment.id);
+        case 6:
+          if (appointment.confirmado)
+            result = await pgAppointments.appointmentComplete(appointment.id);
+          else
+            throw new Error("No se puede marcar la cita como completada si no ha sido confirmada.");
           break;
         default:
           return res.status(409).json({

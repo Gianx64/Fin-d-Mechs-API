@@ -46,6 +46,8 @@ const updateWorkshop = async (req, res, next) => {
     const appointed = await readWithId("workshops", req.body.id).then(result => {
       if (result.error)
         throw new Error(`Error ${result.error}.`);
+      if (!result.data.activo)
+        throw new Error("Este taller no se puede modificar, intente recargar su lista de talleres.");
       return result.data.cita;
     });
     let result;

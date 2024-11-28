@@ -4,12 +4,13 @@ export const userQueries = {
 userCreate:       "INSERT INTO users (nombre, celular, correo, clave, rol) VALUES ($1, $2, $3, $4, $5) RETURNING *",
 userDeactivated:  "SELECT * FROM users WHERE correo = $1 AND activo = FALSE",
 userRead:         "SELECT * FROM users WHERE correo = $1 AND activo = TRUE",
-userUpdate:       "UPDATE users SET (nombre, celular, correo, clave, rol) = ($1, $2, $3, $4, $5) WHERE id = $6 AND activo = TRUE",
+userUpdate:       "UPDATE users SET (nombre, celular, correo, clave, ciudad, direccion) = ($1, $2, $3, $4, $5) WHERE id = $6 AND activo = TRUE",
 userDeactivate:   "UPDATE users SET activo = FALSE WHERE id = $1",
-mechsRead:        "SELECT id, nombre, celular, correo, registrado, verificado FROM users WHERE rol = '10' AND activo = TRUE", // AND verificado <> NULL
+mechsRead:        `SELECT users.id, users.nombre, users.celular, users.correo, users.registrado, users.verificado
+                    FROM mechs INNER JOIN users ON mechs.id_mech = users.id WHERE users.activo = TRUE`, // AND verificado <> NULL
 mechsNotRead:     "SELECT id, nombre, celular, correo, registrado, verificado FROM users WHERE rol = '01' AND activo = TRUE", // AND verificado <> NULL
 mechUpgrade:      "UPDATE users SET rol = b'10' WHERE id = $1 AND activo = TRUE",
-adminSetMech:     "INSERT INTO mechs (mech, verificadopor) VALUES ($1, $2)"
+adminSetMech:     "INSERT INTO mechs (id_mech, id_admin) VALUES ($1, $2)"
 }
 
 function userCreate(data) {

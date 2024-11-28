@@ -8,16 +8,16 @@ appointmentCreate:      `INSERT INTO appointments (id_usuario, fecha, ciudad, di
                           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
 appointmentsReadUser:   `SELECT appointments.*, cars.patente, cars.vin, cars.marca, cars.modelo, workshops.nombre, workshops.direccion as taller_direccion,
                           users.nombre as mech_usuario, users.celular as mech_celular, users.correo as mech_correo
-                          FROM appointments LEFT JOIN cars ON appointments.id_auto = cars.id LEFT JOIN users ON appointments.id_mech = users.id
-                          LEFT JOIN workshops ON appointments.id_taller = workshops.id WHERE appointments.id_usuario = $1`,
+                          FROM appointments INNER JOIN cars ON appointments.id_auto = cars.id INNER JOIN users ON appointments.id_mech = users.id
+                          INNER JOIN workshops ON appointments.id_taller = workshops.id WHERE appointments.id_usuario = $1`,
 appointmentsReadMech:   `SELECT appointments.*, cars.patente, cars.vin, cars.marca, cars.modelo, workshops.nombre, workshops.direccion as taller_direccion,
                           users.nombre as user_usuario, users.celular as user_celular, users.correo as user_correo
-                          FROM appointments LEFT JOIN cars ON appointments.id_auto = cars.id LEFT JOIN users ON appointments.id_usuario = users.id
-                          LEFT JOIN workshops ON appointments.id_taller = workshops.id
+                          FROM appointments INNER JOIN cars ON appointments.id_auto = cars.id INNER JOIN users ON appointments.id_usuario = users.id
+                          INNER JOIN workshops ON appointments.id_taller = workshops.id
                           WHERE appointments.id_mech = $1 OR (appointments.id_mech IS NULL AND cancelado IS NULL AND completado IS NULL)`,
 appointmentsReadWorkshop:       "SELECT * FROM appointments WHERE id_taller = $1",
 appointmentUpdate:      `UPDATE appointments SET (actualizado, fecha, ciudad, direccion, id_auto, detalles, id_mech, servicio, id_taller)
-                          = (NOW(), $1, $2, $3, $4, $5, $6, $7, $8) WHERE id = $9`,
+                          = (NOW(), $1, $2, $3, $4, $5, $6, $7, $8) WHERE id = $9 AND confirmado IS NULL`,
 appointmentCancel:      "UPDATE appointments SET (actualizado, cancelado, canceladopor) = (NOW(), NOW(), $1) WHERE id = $2",
 appointmentConfirm:     "UPDATE appointments SET (actualizado, confirmado) = (NOW(), NOW()) WHERE id = $1",
 appointmentMechTake:    "UPDATE appointments SET (actualizado, confirmado, id_mech) = (NOW(), NOW(), $1) WHERE id = $2 AND id_mech IS NULL",
@@ -111,11 +111,11 @@ function appointmentUpdate(data) {
   }
 };
 
-function appointmentCancel(canceller, appointmentId, carId) {
+function appointmentCancel(canceller, appointment, car) {
   try {
     return new Promise((resolve) => {
       pool.query("BEGIN", () => {
-        pool.query(appointmentQueries.appointmentCancel, [canceller, appointmentId], (err, appointmentResult) => {
+        pool.query(appointmentQueries.appointmentCancel, [canceller, appointment], (err, appointmentResult) => {
           if (err) {
             pool.query("ROLLBACK");
             return resolve({error: parseInt(err.code)});
@@ -124,7 +124,7 @@ function appointmentCancel(canceller, appointmentId, carId) {
             pool.query("ROLLBACK");
             return resolve({error: "No se pudo marcar la cita como cancelada."});
           }
-          pool.query(carQueries.carClean, [carId], (err, carResult) => {
+          pool.query(carQueries.carClean, [car], (err, carResult) => {
             if (err) {
               pool.query("ROLLBACK");
               return resolve({error: parseInt(err.code)});
@@ -156,10 +156,10 @@ function appointmentConfirm(id) {
   }
 };
 
-function appointmentMechTake(mechId, appointmentId) {
+function appointmentMechTake(mech, appointment) {
   try {
     return new Promise((resolve) => {
-      pool.query(appointmentQueries.appointmentMechTake, [mechId, appointmentId], (err, result) => {
+      pool.query(appointmentQueries.appointmentMechTake, [mech, appointment], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
@@ -192,11 +192,11 @@ function appointmentCarDeliver(id) {
   }
 };
 
-function appointmentComplete(appointmentId, userId) {
+function appointmentComplete(appointment, user) {
   try {
     return new Promise((resolve) => {
       pool.query("BEGIN", () => {
-        pool.query(appointmentQueries.appointmentComplete, [appointmentId], (err, appointmentResult) => {
+        pool.query(appointmentQueries.appointmentComplete, [appointment], (err, appointmentResult) => {
           if (err) {
             pool.query("ROLLBACK");
             return resolve({error: parseInt(err.code)});
@@ -205,7 +205,7 @@ function appointmentComplete(appointmentId, userId) {
             pool.query("ROLLBACK");
             return resolve({error: "No se pudo marcar la cita como completada."});
           }
-          pool.query(userQueries.userClean, [userId], (err, userResult) => {
+          pool.query(userQueries.userClean, [user], (err, userResult) => {
             if (err) {
               pool.query("ROLLBACK");
               return resolve({error: parseInt(err.code)});

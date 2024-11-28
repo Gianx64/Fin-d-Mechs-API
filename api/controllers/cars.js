@@ -55,22 +55,27 @@ const readCars = async (req, res, next) => {
 
 const updateCar = async (req, res, next) => {
   try {
+    const user = authController.decodifyHeader(req.headers.authorization);
     const car = await readWithId("cars", req.body.id).then(result => {
       if (result.data.cita)
         throw new Error("Este auto no se puede modificar con una cita pendiente.");
+      if (!result.data.activo)
+        throw new Error("Este auto no se puede modificar, intente recargar su lista de autos.");
       return result.data;
     });
     await pgCars.carReadPlate(req.body.patente).then(result => {
       if (result.error)
         throw new Error(`Error ${result.error}.`);
-      if (result.data !== "0")
-        throw new Error("Ya hay un auto registrado con esa patente.");
+      if (result.data.length > 0)
+        if (result.data[0].id_usuario !== user.id)
+          throw new Error("Ya hay un auto registrado con esa patente.");
     });
     await pgCars.carReadVIN(req.body.vin).then(result => {
       if (result.error)
         throw new Error(`Error ${result.error}.`);
-      if (result.data !== "0")
-        throw new Error("Ya hay un auto registrado con ese VIN.");
+      if (result.data.length > 0)
+        if (result.data[0].id_usuario !== user.id)
+          throw new Error("Ya hay un auto registrado con ese VIN.");
     });
     let result;
     if (car.citado) {

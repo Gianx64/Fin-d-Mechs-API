@@ -3,11 +3,12 @@ import { pool } from "./pool.js";
 export const carQueries = {
 carsRead:       "SELECT * FROM cars WHERE id_usuario = $1 AND activo = TRUE",
 carsReadForm:   "SELECT * FROM cars WHERE id_usuario = $1 AND cita = FALSE AND activo = TRUE",
-carCreate:      "INSERT INTO cars (id_usuario, patente, vin, marca, modelo) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-carReadPlate:   "SELECT COUNT(id) FROM cars WHERE patente = $1 AND activo = TRUE",
-carReadVIN:     "SELECT COUNT(id) FROM cars WHERE vin = $1 AND activo = TRUE",
+carCreate:      "INSERT INTO cars (id_usuario, patente, vin, marca, modelo, anualidad) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+carReadPlate:   "SELECT id_usuario FROM cars WHERE patente = $1 AND activo = TRUE",
+carReadVIN:     "SELECT id_usuario FROM cars WHERE vin = $1 AND activo = TRUE",
 carClean:       "UPDATE cars SET cita = FALSE WHERE id = $1",
-carUpdate:      "UPDATE cars SET (patente, vin, marca, modelo) = ($1, $2, $3, $4) WHERE id = $5 AND cita = FALSE",
+carUpdate:      "UPDATE cars SET (patente, vin, marca, modelo, anualidad) = ($1, $2, $3, $4, $5) WHERE id = $6 AND cita = FALSE",
+carUpdateVIN:   "UPDATE cars SET vin = $1 WHERE id = $2 AND activo = TRUE",
 carAppointed:   "UPDATE cars SET (cita, citado) = (TRUE, TRUE) WHERE id = $1",
 carDeactivate:  "UPDATE cars SET activo = FALSE WHERE id = $1"
 }
@@ -39,7 +40,7 @@ function carsReadForm(id) {
 function carCreate(data) {
   try {
     return new Promise((resolve) => {
-      pool.query(carQueries.carCreate, [data.id_usuario, data.patente, data.vin, data.marca, data.modelo], (err, result) => {
+      pool.query(carQueries.carCreate, [data.id_usuario, data.patente, data.vin, data.marca, data.modelo, data.anualidad], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows[0]});
       });
     });
@@ -52,7 +53,7 @@ function carReadPlate(patente) {
   try {
     return new Promise((resolve) => {
       pool.query(carQueries.carReadPlate, [patente], (err, result) => {
-        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows[0].count});
+        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
   } catch (err) {
@@ -64,7 +65,7 @@ function carReadVIN(vin) {
   try {
     return new Promise((resolve) => {
       pool.query(carQueries.carReadVIN, [vin], (err, result) => {
-        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows[0].count});
+        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
   } catch (err) {
@@ -75,7 +76,19 @@ function carReadVIN(vin) {
 function carUpdate(data) {
   try {
     return new Promise((resolve) => {
-      pool.query(carQueries.carUpdate, [data.patente, data.vin, data.marca, data.modelo, data.id], (err, result) => {
+      pool.query(carQueries.carUpdate, [data.patente, data.vin, data.marca, data.modelo, data.anualidad, data.id], (err, result) => {
+        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
+      });
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+function carUpdateVIN(vin, id) {
+  try {
+    return new Promise((resolve) => {
+      pool.query(carQueries.carUpdateVIN, [vin, id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
@@ -104,5 +117,6 @@ export default {
   carReadPlate,
   carReadVIN,
   carUpdate,
+  carUpdateVIN,
   carDeactivate
 }

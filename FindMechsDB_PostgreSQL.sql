@@ -5,23 +5,26 @@ CREATE TABLE IF NOT EXISTS users(
     correo VARCHAR(64) NOT NULL,
     clave VARCHAR(64) NOT NULL,
     rol BIT(2) NOT NULL DEFAULT b'00',
+    ciudad VARCHAR(64),
+    direccion VARCHAR(64),
     registrado TIMESTAMP NOT NULL DEFAULT NOW(),
     verificado TIMESTAMP,
     activo BOOLEAN NOT NULL DEFAULT TRUE
 );
 COMMENT ON COLUMN users.rol IS '11=admin, 10=mech_verified, 01=mech_unverified, 00=user';
 CREATE TABLE IF NOT EXISTS mechs(
-    mech SMALLINT NOT NULL REFERENCES users(id),
-    verificadopor SMALLINT NOT NULL REFERENCES users(id),
+    id_mech SMALLINT NOT NULL REFERENCES users(id),
+    id_admin SMALLINT NOT NULL REFERENCES users(id),
     verificado TIMESTAMP NOT NULL DEFAULT NOW()
 );
 CREATE TABLE IF NOT EXISTS cars(
     id SMALLSERIAL PRIMARY KEY,
     id_usuario SMALLINT NOT NULL REFERENCES users(id),
     patente VARCHAR(10) NOT NULL,
-    vin VARCHAR(17) NOT NULL,
+    vin VARCHAR(17),
     marca VARCHAR(16) NOT NULL,
     modelo VARCHAR(32) NOT NULL,
+    anualidad SMALLINT NOT NULL,
     cita BOOLEAN NOT NULL DEFAULT FALSE,
     citado BOOLEAN NOT NULL DEFAULT FALSE,
     activo BOOLEAN NOT NULL DEFAULT TRUE

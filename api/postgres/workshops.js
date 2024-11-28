@@ -7,14 +7,14 @@ workshopReadMechs:  `SELECT users.id, users.nombre, users.celular, users.correo 
                       RIGHT JOIN users ON workshopmechs.id_mech = users.id`,
 workshopCreate:     "INSERT INTO workshops (id_usuario, ciudad, direccion, detalles) VALUES ($1, $2, $3, $4) RETURNING *",
 workshopUpdate:     "UPDATE workshops SET (ciudad, direccion, detalles) = ($1, $2, $3) WHERE id = $4",
-workshopAppointed:  "UPDATE workshops SET citado = TRUE WHERE id = $1",
+workshopAppointed:  "UPDATE workshops SET cita = TRUE WHERE id = $1",
 workshopDeactivate: "UPDATE workshops SET activo = FALSE WHERE id = $1 AND cita = FALSE"
 }
 
 function workshopsRead() {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.workshopsRead, (err, result) => {
+      pool.query(workshopQueries.workshopsRead, (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
@@ -26,7 +26,7 @@ function workshopsRead() {
 function workshopsReadMech(id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.workshopsReadMech, [id], (err, result) => {
+      pool.query(workshopQueries.workshopsReadMech, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
@@ -38,7 +38,7 @@ function workshopsReadMech(id) {
 function workshopReadMechs(id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.workshopReadMechs, [id], (err, result) => {
+      pool.query(workshopQueries.workshopReadMechs, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows});
       });
     });
@@ -50,7 +50,7 @@ function workshopReadMechs(id) {
 function workshopCreate(data) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.workshopCreate, [data.id_usuario, data.ciudad, data.direccion, data.detalles], (err, result) => {
+      pool.query(workshopQueries.workshopCreate, [data.id_usuario, data.ciudad, data.direccion, data.detalles], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rows[0]});
       });
     });
@@ -62,7 +62,7 @@ function workshopCreate(data) {
 function workshopUpdate(data) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.workshopUpdate, [data.ciudad, data.direccion, data.detalles, data.id], (err, result) => {
+      pool.query(workshopQueries.workshopUpdate, [data.ciudad, data.direccion, data.detalles, data.id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
@@ -74,7 +74,7 @@ function workshopUpdate(data) {
 function workshopDeactivate(id) {
   try {
     return new Promise((resolve) => {
-      pool.query(queries.workshopDeactivate, [id], (err, result) => {
+      pool.query(workshopQueries.workshopDeactivate, [id], (err, result) => {
         return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
