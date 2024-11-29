@@ -4,17 +4,20 @@ import authController from "./auth.js"
 
 const createCar = async (req, res, next) => {
   try {
+    const user = authController.decodifyHeader(req.headers.authorization);
     await pgCars.carReadPlate(req.body.patente).then(result => {
       if (result.error)
         throw new Error(`Error ${result.error}.`);
-      if (result.data !== "0")
-        throw new Error("Ya hay un auto registrado con esa patente.");
+      if (result.data.length > 0)
+        if (result.data[0].id_usuario !== user.id)
+          throw new Error("Ya hay un auto registrado con esa patente.");
     });
     await pgCars.carReadVIN(req.body.vin).then(result => {
       if (result.error)
         throw new Error(`Error ${result.error}.`);
-      if (result.data !== "0")
-        throw new Error("Ya hay un auto registrado con ese VIN.");
+      if (result.data.length > 0)
+        if (result.data[0].id_usuario !== user.id)
+          throw new Error("Ya hay un auto registrado con ese VIN.");
     });
     await pgCars.carCreate(req.body).then(result => {
       if (result.error)

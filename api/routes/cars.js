@@ -5,7 +5,7 @@ import authController from "../controllers/auth.js";
 const router = Router();
 
 router.get('/', carController.readCars);
-router.post('/', authController.checkAuth, carController.createCar);
+router.post('/', carController.createCar);
 router.put("/", carController.updateCar);
 router.delete("/:id", authController.checkAuth, carController.deactivateCar);
 
