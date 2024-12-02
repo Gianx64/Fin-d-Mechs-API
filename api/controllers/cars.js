@@ -1,6 +1,6 @@
-import pgCars from "../postgres/cars.js"
-import { readWithId } from "../postgres/pool.js"
-import authController from "./auth.js"
+import pgCars from "../postgres/cars.js";
+import { readWithId } from "../postgres/pool.js";
+import authController from "./auth.js";
 
 const createCar = async (req, res, next) => {
   try {
@@ -95,6 +95,29 @@ const updateCar = async (req, res, next) => {
   }
 }
 
+const updateCarVIN = async (req, res, next) => {
+  try {
+    const user = authController.decodifyHeader(req.headers.authorization);
+    if (user.rol !== "10")
+      throw new Error("Acción denegada.");
+    const car = await readWithId("cars", req.params.id).then(result => {
+      if (!result.data.activo)
+        throw new Error("Este auto ha sido desactivado y no se puede modificar.");
+      return result.data;
+    });
+    await pgCars.carReadVIN(req.body.vin).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      if (result.data.length > 0)
+        if (result.data[0].id_usuario !== car.id_usuario)
+          throw new Error("Ya hay un auto registrado con ese VIN.");
+      res.status(200).json(result.data);
+    });
+  } catch(err) {
+    next(err);
+  }
+}
+
 const deactivateCar = async (req, res, next) => {
   try {
     await pgCars.carDeactivate(req.params.id).then(result => {
@@ -111,5 +134,6 @@ export default {
   createCar,
   readCars,
   updateCar,
+  updateCarVIN,
   deactivateCar
 }

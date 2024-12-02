@@ -1,6 +1,6 @@
-import { hash, compare } from "bcrypt"
-import jwt from "jsonwebtoken"
-import pgUsers from "../postgres/users.js"
+import { hash, compare } from "bcrypt";
+import jwt from "jsonwebtoken";
+import pgUsers from "../postgres/users.js";
 import { readWithId } from "../postgres/pool.js";
 
 //Authorization token decodifier, returns user data
@@ -113,6 +113,29 @@ async function signOff(req, res, next) {
   }
 }
 
+async function updateUser(req, res, next) {
+  try {
+    const user = decodifyHeader(req.headers.authorization);
+    if (user.correo !== req.body.correo)
+      await pgUsers.userUpdateCorreo(req.body.correo, user.id).then(result => {
+        if (result.error)
+          throw new Error(`Error ${result.error}.`);
+      });
+    if (req.body.clave)
+      await pgUsers.userUpdateClave(await hash(req.body.clave.toString(), 6), user.id).then(result => {
+        if (result.error)
+          throw new Error(`Error ${result.error}.`);
+      });
+    await pgUsers.userUpdate(req.body).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      res.status(200).json(result.data);
+    });
+  } catch(err) {
+    next(err);
+  }
+}
+
 //Returns administration panel data
 async function getAdminData(req, res, next) {
   try {
@@ -187,6 +210,7 @@ export default {
   signIn,
   signUp,
   signOff,
+  updateUser,
   getAdminData,
   setMech,
   checkAuth,

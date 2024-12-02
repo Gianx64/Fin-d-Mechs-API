@@ -4,7 +4,9 @@ export const userQueries = {
 userCreate:       "INSERT INTO users (nombre, celular, correo, clave, rol) VALUES ($1, $2, $3, $4, $5) RETURNING *",
 userDeactivated:  "SELECT * FROM users WHERE correo = $1 AND activo = FALSE",
 userRead:         "SELECT * FROM users WHERE correo = $1 AND activo = TRUE",
-userUpdate:       "UPDATE users SET (nombre, celular, correo, clave, ciudad, direccion) = ($1, $2, $3, $4, $5) WHERE id = $6 AND activo = TRUE",
+userUpdate:       "UPDATE users SET (nombre, celular, ciudad, direccion) = ($1, $2, $3, $4) WHERE id = $5 AND activo = TRUE",
+userUpdateCorreo: "UPDATE users SET (correo, verificado) = ($1, NULL) WHERE id = $2 AND activo = TRUE",
+userUpdateClave:  "UPDATE users SET clave = $1 WHERE id = $2 AND activo = TRUE",
 userDeactivate:   "UPDATE users SET activo = FALSE WHERE id = $1",
 mechsRead:        `SELECT users.id, users.nombre, users.celular, users.correo, users.registrado, users.verificado
                     FROM mechs INNER JOIN users ON mechs.id_mech = users.id WHERE users.activo = TRUE`, // AND verificado <> NULL
@@ -51,9 +53,41 @@ function userUpdate(data) {
       pool.query(userQueries.userDeactivated, [data.correo], (err, result) => {
         if (result.rowCount > 2)
           return resolve({error: "Correo deshabilitado."});
-        pool.query(userQueries.userUpdate, [data.nombre, data.celular, data.correo, data.clave, data.rol, data.id], (err, result) => {
+        pool.query(userQueries.userUpdate, [data.nombre, data.celular, data.ciudad, data.direccion, data.id], (err, result) => {
           return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
         });
+      });
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+function userUpdateCorreo(correo, id) {
+  try {
+    return new Promise((resolve) => {
+      pool.query(userQueries.userDeactivated, [data.correo], (err, result) => {
+        if (result.rowCount > 2)
+          return resolve({error: "Correo deshabilitado."});
+        pool.query(userQueries.userRead, [data.correo], (err, result) => {
+          if (result.rowCount > 0)
+            return resolve({error: "Este correo ya está siendo utilizado."});
+          pool.query(userQueries.userUpdateCorreo, [correo, id], (err, result) => {
+            return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
+          });
+        });
+      });
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+function userUpdateClave(clave, id) {
+  try {
+    return new Promise((resolve) => {
+      pool.query(userQueries.userUpdateClave, [clave, id], (err, result) => {
+        return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
       });
     });
   } catch (err) {
@@ -118,6 +152,8 @@ export default {
   userCreate,
   userRead,
   userUpdate,
+  userUpdateCorreo,
+  userUpdateClave,
   userDeactivate,
   mechsRead,
   mechsNotRead,
