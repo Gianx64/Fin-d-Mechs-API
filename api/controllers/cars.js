@@ -111,6 +111,10 @@ const updateCarVIN = async (req, res, next) => {
       if (result.data.length > 0)
         if (result.data[0].id_usuario !== car.id_usuario)
           throw new Error("Ya hay un auto registrado con ese VIN.");
+      });
+    await pgCars.carUpdateVIN(req.body.vin, req.params.id).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
       res.status(200).json(result.data);
     });
   } catch(err) {

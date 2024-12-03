@@ -6,7 +6,7 @@ const router = Router();
 
 router.get('/', carController.readCars);
 router.post('/', carController.createCar);
-router.put("/", carController.updateCar);
+router.put('/', carController.updateCar);
 router.patch("/:id", carController.updateCarVIN);
 router.delete("/:id", authController.checkAuth, carController.deactivateCar);
 

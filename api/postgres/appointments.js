@@ -6,12 +6,12 @@ import { workshopQueries } from "./workshops.js";
 const appointmentQueries = {
 appointmentCreate:      `INSERT INTO appointments (id_usuario, fecha, ciudad, direccion, id_auto, detalles, id_mech, servicio, id_taller)
                           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
-appointmentsReadUser:   `SELECT appointments.*, cars.patente, cars.vin, cars.marca, cars.modelo, workshops.nombre, workshops.direccion as taller_direccion,
-                          users.nombre as mech_usuario, users.celular as mech_celular, users.correo as mech_correo
+appointmentsReadUser:   `SELECT appointments.*, cars.patente, cars.vin, cars.marca, cars.modelo, workshops.nombre as taller_nombre, workshops.direccion as taller_direccion,
+                          users.nombre as mech_nombre, users.celular as mech_celular, users.correo as mech_correo
                           FROM appointments INNER JOIN cars ON appointments.id_auto = cars.id LEFT JOIN users ON appointments.id_mech = users.id
                           LEFT JOIN workshops ON appointments.id_taller = workshops.id WHERE appointments.id_usuario = $1`,
-appointmentsReadMech:   `SELECT appointments.*, cars.patente, cars.vin, cars.marca, cars.modelo, workshops.nombre, workshops.direccion as taller_direccion,
-                          users.nombre as user_usuario, users.celular as user_celular, users.correo as user_correo
+appointmentsReadMech:   `SELECT appointments.*, cars.patente, cars.vin, cars.marca, cars.modelo, workshops.nombre as taller_nombre, workshops.direccion as taller_direccion,
+                          users.nombre as user_nombre, users.celular as user_celular, users.correo as user_correo
                           FROM appointments INNER JOIN cars ON appointments.id_auto = cars.id LEFT JOIN users ON appointments.id_usuario = users.id
                           LEFT JOIN workshops ON appointments.id_taller = workshops.id
                           WHERE appointments.id_mech = $1 OR (appointments.id_mech IS NULL AND cancelado IS NULL AND completado IS NULL)`,

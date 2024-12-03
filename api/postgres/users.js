@@ -9,8 +9,8 @@ userUpdateCorreo: "UPDATE users SET (correo, verificado) = ($1, NULL) WHERE id =
 userUpdateClave:  "UPDATE users SET clave = $1 WHERE id = $2 AND activo = TRUE",
 userDeactivate:   "UPDATE users SET activo = FALSE WHERE id = $1",
 mechsRead:        `SELECT users.id, users.nombre, users.celular, users.correo, users.registrado, users.verificado
-                    FROM mechs INNER JOIN users ON mechs.id_mech = users.id WHERE users.activo = TRUE`, // AND verificado <> NULL
-mechsNotRead:     "SELECT id, nombre, celular, correo, registrado, verificado FROM users WHERE rol = '01' AND activo = TRUE", // AND verificado <> NULL
+                    FROM mechs INNER JOIN users ON mechs.id_mech = users.id WHERE users.activo = TRUE`, //TODO: AND verificado <> NULL
+mechsNotRead:     "SELECT id, nombre, celular, correo, registrado, verificado FROM users WHERE rol = '01' AND activo = TRUE", //TODO: AND verificado <> NULL
 mechUpgrade:      "UPDATE users SET rol = b'10' WHERE id = $1 AND activo = TRUE",
 adminSetMech:     "INSERT INTO mechs (id_mech, id_admin) VALUES ($1, $2)"
 }

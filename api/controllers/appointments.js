@@ -1,9 +1,9 @@
-import pgAppointments from "../postgres/appointments.js"
-import pgCars from "../postgres/cars.js"
-import pgWorkshops from "../postgres/workshops.js"
-import pgUsers from "../postgres/users.js"
-import { readWithId } from "../postgres/pool.js"
-import authController from "./auth.js"
+import pgAppointments from "../postgres/appointments.js";
+import pgCars from "../postgres/cars.js";
+import pgWorkshops from "../postgres/workshops.js";
+import pgUsers from "../postgres/users.js";
+import { readWithId } from "../postgres/pool.js";
+import authController from "./auth.js";
 
 //Returns form data list
 async function getFormData(req, res, next) {
