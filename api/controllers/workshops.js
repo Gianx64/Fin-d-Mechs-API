@@ -17,25 +17,36 @@ const createWorkshop = async (req, res, next) => {
 const readWorkshops = async (req, res, next) => {
   try {
     const user = authController.decodifyHeader(req.headers.authorization);
-    let result;
     switch (user.rol) {
       case "10":
-        result = await pgWorkshops.workshopsReadMech(user.id);
+        await pgWorkshops.workshopsReadMech(user.id).then(result => {
+          if (result.error)
+            if (typeof result.error === "number")
+              throw new Error(`Error ${result.error}.`);
+            else
+              throw new Error(result.error);
+          res.status(200).json(result.data);
+        });
         break;
       case "01":
-        result = {error: "Mecánico no autorizado."};
-        break;
+        throw new Error("Mecánico no autorizado.");
       case "11":
       case "00":
       default:
-        result = {error: "Usuario no autorizado."};
+        throw new Error("Usuario no autorizado.");
     }
-    if (result.error)
-      if (typeof result.error === "number")
+  } catch(err) {
+    next(err);
+  }
+}
+
+const readWorkshopMechs = async (req, res, next) => {
+  try {
+    await pgWorkshops.workshopReadMechs(req.params.id).then(result => {
+      if (result.error)
         throw new Error(`Error ${result.error}.`);
-      else
-        throw new Error(result.error);
-    res.status(200).json(result.data);
+      res.status(200).json(result.data);
+    });
   } catch(err) {
     next(err);
   }
@@ -43,22 +54,27 @@ const readWorkshops = async (req, res, next) => {
 
 const updateWorkshop = async (req, res, next) => {
   try {
+    const user = authController.decodifyHeader(req.headers.authorization);
     const appointed = await readWithId("workshops", req.body.id).then(result => {
-      if (result.error)
-        throw new Error(`Error ${result.error}.`);
+      if (result.data.id_usuario !== user.id)
+        throw new Error("Acción no autorizada.");
       if (!result.data.activo)
-        throw new Error("Este taller no se puede modificar, intente recargar su lista de talleres.");
-      return result.data.cita;
+        throw new Error("Este taller no se puede modificar.");
+      return result.data.citado;
     });
-    let result;
     if (appointed) {
       await pgWorkshops.workshopDeactivate(req.body.id);
-      result = await pgWorkshops.workshopCreate(req.body);
+      await pgWorkshops.workshopCreate(req.body).then(result => {
+        if (result.error)
+          throw new Error(`Error ${result.error}.`);
+        res.status(200).json(result.data);
+      });
     } else
-      result = await pgWorkshops.workshopUpdate(req.body);
-    if (result.error)
-      throw new Error(`Error ${result.error}.`);
-    res.status(200).json(result.data);
+      await pgWorkshops.workshopUpdate(req.body).then(result => {
+        if (result.error)
+          throw new Error(`Error ${result.error}.`);
+        res.status(200).json(result.data);
+      });
   } catch(err) {
     next(err);
   }
@@ -66,6 +82,13 @@ const updateWorkshop = async (req, res, next) => {
 
 const deactivateWorkshop = async (req, res, next) => {
   try {
+    const user = authController.decodifyHeader(req.headers.authorization);
+    await readWithId("workshops", req.body.id).then(result => {
+      if (result.data.id_usuario !== user.id)
+        throw new Error("Acción no autorizada.");
+      if (!result.data.activo)
+        throw new Error("Este taller no se puede modificar.");
+    });
     await pgWorkshops.workshopDeactivate(req.params.id).then(result => {
       if (result.error)
         throw new Error(`Error ${result.error}.`);
@@ -80,6 +103,7 @@ const deactivateWorkshop = async (req, res, next) => {
 export default {
   createWorkshop,
   readWorkshops,
+  readWorkshopMechs,
   updateWorkshop,
   deactivateWorkshop
 }

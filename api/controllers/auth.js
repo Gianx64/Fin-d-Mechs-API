@@ -23,35 +23,37 @@ async function getUserFromToken(req, res, next) {
 //Register new user, returns user data, including token
 async function signUp(req, res, next) {
   try {
+    if (req.body.correo.indexOf('@') === -1 || req.body.correo.indexOf('.') === -1)
+      return res.status(409).json({
+        message: "Correo inválido."
+      });
     //TODO: verificar celular
     const authData = {
+      //...req.body,
       nombre: req.body.nombre,
       celular: req.body.celular,
       correo: req.body.correo.toLowerCase(),
       clave: await hash(req.body.clave.toString(), 6),
       rol: req.body.rol ? "01" : "00"
     };
-    if (req.body.correo.indexOf('@') === -1 || req.body.correo.indexOf('.') === -1) {
-      return res.status(409).json({
-        message: "Correo inválido."
-      });
-    }
-    let data = await pgUsers.userCreate(authData).then(result => {
+    //req.body.correo = req.body.correo.toLowerCase();
+    //req.body.rol = req.body.rol ? "01" : "00";
+    //req.body.clave = await hash(req.body.clave.toString(), 6);
+    await pgUsers.userCreate(authData).then(result => {
       if (result.error) {
         if (typeof result.error === "number")
           throw new Error(`Error ${result.error}.`);
         else
           throw new Error(result.error);
       }
-      return result.data;
+      delete result.data.clave;
+      delete result.data.activo;
+      result.data = { ...result.data, token: jwt.sign(data, process.env.JWTSECRET, {expiresIn: "1d"})};
+      delete result.data.nombre;
+      delete result.data.celular;
+      delete result.data.correo;
+      res.status(201).json(result.data);
     });
-    delete data.clave;
-    delete data.activo;
-    data = { ...data, token: jwt.sign(data, process.env.JWTSECRET, {expiresIn: "1d"})};
-    delete data.nombre;
-    delete data.celular;
-    delete data.correo;
-    res.status(201).json(data);
   } catch(err) {
     next(err);
   }

@@ -89,7 +89,7 @@ const readAppointments = async (req, res, next) => {
 const updateAppointment = async (req, res, next) => {
   try {
     const user = authController.decodifyHeader(req.headers.authorization);
-    const appointment = await readWithId("appointments", req.params.appointmentId).then(result => {
+    const appointment = await readWithId("appointments", req.params.id).then(result => {
       if (result.data.cancelado)
         throw new Error("La cita ya no se puede modificar.");
       return result.data;
@@ -127,7 +127,7 @@ const updateAppointment = async (req, res, next) => {
 const flagAppointment = async (req, res, next) => {
   try {
     const user = authController.decodifyHeader(req.headers.authorization);
-    const appointment = await readWithId("appointments", req.params.appointmentId).then(result => {
+    const appointment = await readWithId("appointments", req.params.id).then(result => {
       if (result.data.cancelado)
         throw new Error("La cita ya no se puede modificar.");
       return result.data;

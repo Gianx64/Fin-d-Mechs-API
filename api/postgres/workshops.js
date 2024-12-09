@@ -7,7 +7,7 @@ workshopReadMechs:  `SELECT users.id, users.nombre, users.celular, users.correo 
                       RIGHT JOIN users ON workshopmechs.id_mech = users.id`,
 workshopCreate:     "INSERT INTO workshops (id_usuario, ciudad, direccion, detalles) VALUES ($1, $2, $3, $4) RETURNING *",
 workshopUpdate:     "UPDATE workshops SET (ciudad, direccion, detalles) = ($1, $2, $3) WHERE id = $4",
-workshopAppointed:  "UPDATE workshops SET cita = TRUE WHERE id = $1",
+workshopAppointed:  "UPDATE workshops SET citado = TRUE WHERE id = $1",
 workshopDeactivate: "UPDATE workshops SET activo = FALSE WHERE id = $1 AND cita = FALSE"
 }
 

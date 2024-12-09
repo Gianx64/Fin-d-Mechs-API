@@ -5,8 +5,9 @@ import authController from "../controllers/auth.js";
 const router = Router();
 
 router.get('/', workshopController.readWorkshops);
+router.get("/:id/mechs", authController.checkAuth, workshopController.readWorkshopMechs);
 router.post('/', authController.checkAuth, workshopController.createWorkshop);
-router.patch("/", authController.checkAuth, workshopController.updateWorkshop);
-router.delete("/:workshopId", authController.checkAuth, workshopController.deactivateWorkshop);
+router.put('/', workshopController.updateWorkshop);
+router.delete("/:id", workshopController.deactivateWorkshop);
 
 export default router;
