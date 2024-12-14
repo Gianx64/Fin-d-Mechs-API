@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS cars(
 CREATE TABLE IF NOT EXISTS workshops(
     id SMALLSERIAL PRIMARY KEY,
     id_usuario SMALLINT NOT NULL REFERENCES users(id),
-    nombre VARCHAR(64) NOT NULL,
+    nombre VARCHAR(32) NOT NULL,
     ciudad VARCHAR(32) NOT NULL,
     direccion VARCHAR(64) NOT NULL,
     ubicacion POINT NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS workshops(
     citado BOOLEAN NOT NULL DEFAULT FALSE,
     registrado TIMESTAMP NOT NULL DEFAULT NOW(),
     verificado TIMESTAMP,
-    verificadopor SMALLINT NOT NULL REFERENCES users(id),
+    verificadopor SMALLINT REFERENCES users(id),
     activo BOOLEAN NOT NULL DEFAULT TRUE
 );
 CREATE TABLE IF NOT EXISTS workshopmechs(

@@ -1,6 +1,7 @@
 import { hash, compare } from "bcrypt";
 import jwt from "jsonwebtoken";
 import pgUsers from "../postgres/users.js";
+import pgWorkshops from "../postgres/workshops.js";
 import { readWithId } from "../postgres/pool.js";
 
 //Authorization token decodifier, returns user data
@@ -146,8 +147,14 @@ async function getAdminData(req, res, next) {
         throw new Error(`Error ${result.error}.`);
       return result.data;
     });
+    const workshops = await pgWorkshops.workshopsNotRead().then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      return result.data;
+    });
     res.status(200).json({
-      mechs: mechs
+      mechs: mechs,
+      workshops: workshops
     });
   } catch(err) {
     next(err);
