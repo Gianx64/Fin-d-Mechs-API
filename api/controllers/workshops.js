@@ -80,6 +80,22 @@ const updateWorkshop = async (req, res, next) => {
   }
 }
 
+//Gives verification to a workshop
+const upgradeWorkshop = async (req, res, next) => {
+  try {
+    const user = authController.decodifyHeader(req.headers.authorization);
+    if (user.rol !== "11")
+      throw new Error("Acceso no autorizado.");
+    await pgWorkshops.workshopUpgrade(user.id, req.body.workshop).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      res.status(200).json(result.data);
+    });
+  } catch(err) {
+    next(err);
+  }
+}
+
 const deactivateWorkshop = async (req, res, next) => {
   try {
     const user = authController.decodifyHeader(req.headers.authorization);
@@ -105,5 +121,6 @@ export default {
   readWorkshops,
   readWorkshopMechs,
   updateWorkshop,
+  upgradeWorkshop,
   deactivateWorkshop
 }
