@@ -9,6 +9,6 @@ router.post("/signin", authController.signIn);
 router.delete("/:id", authController.signOff);
 router.post("/profile", authController.updateUser);
 router.get("/admindata", authController.checkAdmin, authController.getAdminData);
-router.patch("/setmech", authController.setMech);
+router.patch("/upgrade", authController.upgradeMech);
 
 export default router;

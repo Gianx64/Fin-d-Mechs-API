@@ -12,7 +12,7 @@ mechsRead:        `SELECT users.id, users.nombre, users.celular, users.correo, u
                     FROM mechs INNER JOIN users ON mechs.id_mech = users.id WHERE users.activo = TRUE`, //TODO: AND verificado <> NULL
 mechsNotRead:     "SELECT id, nombre, celular, correo, registrado, verificado FROM users WHERE rol = '01' AND activo = TRUE", //TODO: AND verificado <> NULL
 mechUpgrade:      "UPDATE users SET rol = b'10' WHERE id = $1 AND activo = TRUE",
-adminSetMech:     "INSERT INTO mechs (id_mech, id_admin) VALUES ($1, $2)"
+adminSetMech:     "INSERT INTO mechs (id_admin, id_mech) VALUES ($1, $2)"
 }
 
 function userCreate(data) {
@@ -131,13 +131,13 @@ function mechsNotRead() {
   }
 };
 
-function mechUpgrade(mech, admin) {
+function mechUpgrade(admin, mech) {
   try {
     return new Promise((resolve) => {
       pool.query(userQueries.mechUpgrade, [mech], (err, result) => {
         if (err)
           return resolve({error: parseInt(err.code)});
-        pool.query(userQueries.adminSetMech, [mech, admin], (err, result) => {
+        pool.query(userQueries.adminSetMech, [admin, mech], (err, result) => {
           return err ? resolve({error: parseInt(err.code)}) : resolve({data: result.rowCount});
         });
       });

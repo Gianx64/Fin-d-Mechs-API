@@ -139,6 +139,22 @@ async function updateUser(req, res, next) {
   }
 }
 
+//Gives verification to a mech
+async function upgradeMech(req, res, next) {
+  try {
+    const user = decodifyHeader(req.headers.authorization);
+    if (user.rol !== "11")
+      throw new Error("Acceso no autorizado.");
+    await pgUsers.mechUpgrade(user.id, req.body.mech).then(result => {
+      if (result.error)
+        throw new Error(`Error ${result.error}.`);
+      res.status(200).json(result.data);
+    });
+  } catch(err) {
+    next(err);
+  }
+}
+
 //Returns administration panel data
 async function getAdminData(req, res, next) {
   try {
@@ -155,22 +171,6 @@ async function getAdminData(req, res, next) {
     res.status(200).json({
       mechs: mechs,
       workshops: workshops
-    });
-  } catch(err) {
-    next(err);
-  }
-}
-
-//Gives verification to a mech
-async function setMech(req, res, next) {
-  try {
-    const user = decodifyHeader(req.headers.authorization);
-    if (user.rol !== "11")
-      throw new Error("Acceso no autorizado.");
-    await pgUsers.mechUpgrade(req.body.mech, user.id).then(result => {
-      if (result.error)
-        throw new Error(`Error ${result.error}.`);
-      res.status(200).json(result.data);
     });
   } catch(err) {
     next(err);
@@ -220,8 +220,8 @@ export default {
   signUp,
   signOff,
   updateUser,
+  upgradeMech,
   getAdminData,
-  setMech,
   checkAuth,
   checkAdmin,
   getUserFromToken,
