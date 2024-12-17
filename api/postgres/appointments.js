@@ -1,7 +1,6 @@
 import { pool } from "./pool.js";
 import { carQueries } from "./cars.js";
 import { userQueries } from "./users.js";
-import { workshopQueries } from "./workshops.js";
 
 const appointmentQueries = {
 appointmentCreate:      `INSERT INTO appointments (id_usuario, fecha, ciudad, direccion, id_auto, detalles, id_mech, servicio, id_taller)
@@ -44,14 +43,8 @@ function appointmentCreate(data) {
                 pool.query("ROLLBACK");
                 return resolve({error: parseInt(err.code)});
               }
-              pool.query(workshopQueries.workshopAppointed, [data.id_taller], (err, workshopResult) => {
-                if (err){
-                  pool.query("ROLLBACK");
-                  return resolve({error: parseInt(err.code)});
-                }
-                pool.query("COMMIT");
-                return resolve({data: appointmentResult.rows[0]});
-              });
+              pool.query("COMMIT");
+              return resolve({data: appointmentResult.rows[0]});
             });
         });
       });
