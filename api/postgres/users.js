@@ -66,10 +66,10 @@ function userUpdate(data) {
 function userUpdateCorreo(correo, id) {
   try {
     return new Promise((resolve) => {
-      pool.query(userQueries.userDeactivated, [data.correo], (err, result) => {
+      pool.query(userQueries.userDeactivated, [correo], (err, result) => {
         if (result.rowCount > 2)
           return resolve({error: "Correo deshabilitado."});
-        pool.query(userQueries.userRead, [data.correo], (err, result) => {
+        pool.query(userQueries.userRead, [correo], (err, result) => {
           if (result.rowCount > 0)
             return resolve({error: "Este correo ya está siendo utilizado."});
           pool.query(userQueries.userUpdateCorreo, [correo, id], (err, result) => {
