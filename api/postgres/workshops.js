@@ -1,7 +1,9 @@
 import { pool } from "./pool.js";
 
 export const workshopQueries = {
-workshopsRead:      "SELECT * FROM workshops WHERE verificado IS NOT NULL AND verificadopor IS NOT NULL AND activo = TRUE",
+workshopsRead:      `SELECT workshops.*, users.nombre as user_nombre, users.celular as user_celular, users.correo as user_correo
+                      FROM workshops INNER JOIN users ON workshops.id_usuario = users.id
+                      WHERE workshops.verificado IS NOT NULL AND workshops.verificadopor IS NOT NULL AND workshops.activo = TRUE`,
 workshopsNotRead:   `SELECT workshops.*, users.nombre as user_nombre, users.celular as user_celular, users.correo as user_correo
                       FROM workshops INNER JOIN users ON workshops.id_usuario = users.id WHERE workshops.verificado IS NULL`,
 workshopsReadMech:  "SELECT * FROM workshops WHERE id_usuario = $1 AND activo = TRUE",
