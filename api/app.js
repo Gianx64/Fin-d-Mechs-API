@@ -14,15 +14,15 @@ app.use(express.urlencoded({extended: true}));
 
 //Request logger (Chile time UTC-3, request ip, method and url)
 app.use((req, res, next) => {
-  console.log(new Date(new Date().valueOf() - 10800000).toLocaleString("es-CL", {hour12: false}), req.headers["x-real-ip"], req.method, req.url);
+  console.log(new Date(new Date().valueOf() - 10800000).toLocaleString("es-CL", {hour12: false}), req.headers["X-Real-IP"], req.method, req.url);
   next();
 });
 
 //Route groups
-app.use("/appointments", appointmentRoutes);
-app.use("/cars", carRoutes);
-app.use("/workshops", workshopRoutes);
-app.use("/auth", authRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/cars", carRoutes);
+app.use("/api/workshops", workshopRoutes);
+app.use("/api/auth", authRoutes);
 
 //OPTIONS route
 app.use((req, res, next) => {
